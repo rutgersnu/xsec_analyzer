@@ -15,7 +15,7 @@ stv_root_dict.o:
 
 .PHONY: clean
 
-.INTERMEDIATE: stv_root_dict.o
+#.INTERMEDIATE: stv_root_dict.o
 
 clean:
 	$(RM) univmake analyzer stv_root_dict.o stv_root_dict_rdict.pcm
