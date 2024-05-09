@@ -1,3 +1,4 @@
 *.root
 univmake
 analyzer
+cc0pi_analyzer
