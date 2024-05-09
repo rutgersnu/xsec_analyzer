@@ -1473,90 +1473,91 @@ void AnalysisEvent::classify_tracks() {
   sel_n_bdt_proton_ = 0;
   sel_n_bdt_invalid_ = 0;
 
-  // Only make predictions for events passing the BDT pre-selection cuts
-  if (!sel_presel_) return;
+  // Classify all FS objects passing the BDT pre-selection cuts
+  if (sel_presel_) {
+    for ( int p = 0; p < num_pf_particles_; ++p ) {
+      // Only consider generation 2 tracks
+      float track_score = pfp_track_score_->at( p );
+      unsigned int generation = pfp_generation_->at( p );
+      if ( generation != 2 || track_score <= TRACK_SCORE_CUT ) continue;
 
-  // Classify all FS objects
-  for ( int p = 0; p < num_pf_particles_; ++p ) {
-    // Only consider generation 2 tracks
-    float track_score = pfp_track_score_->at( p );
-    unsigned int generation = pfp_generation_->at( p );
-    if ( generation != 2 || track_score <= TRACK_SCORE_CUT ) continue;
+      // Observables vector
+      float pmcs = track_mcs_mom_mu_->at(p);
+      float prange = track_range_mom_mu_->at(p);
+      float trk_relative_dif_mcs_range = (pmcs - prange) / prange;
 
-    // Observables vector
-    float pmcs = track_mcs_mom_mu_->at(p);
-    float prange = track_range_mom_mu_->at(p);
-    float trk_relative_dif_mcs_range = (pmcs - prange) / prange;
+      float vx = track_endx_->at(p);
+      float vy = track_endx_->at(p);
+      float vz = track_endx_->at(p);
+      bool trk_contained = point_inside_FV( vx, vy, vz );
 
-    float vx = track_endx_->at(p);
-    float vy = track_endx_->at(p);
-    float vz = track_endx_->at(p);
-    bool trk_contained = point_inside_FV( vx, vy, vz );
+      unsigned int num_daughters = pfp_trk_daughters_count_->at(p) +
+                                   pfp_shr_daughters_count_->at(p);
 
-    unsigned int num_daughters = pfp_trk_daughters_count_->at(p) +
-                                 pfp_shr_daughters_count_->at(p);
+      float fs_v[] = {
+        track_start_distance_->at(p),
+        track_llr_pid_score_->at(p),
+        track_chi2_proton_->at(p),
+        track_kinetic_energy_p_->at(p),
+        (float) trk_contained,
+        (float) num_daughters,
+        trk_relative_dif_mcs_range
+      };
 
-    float fs_v[] = {
-      track_start_distance_->at(p),
-      track_llr_pid_score_->at(p),
-      track_chi2_proton_->at(p),
-      track_kinetic_energy_p_->at(p),
-      (float) trk_contained,
-      (float) num_daughters,
-      trk_relative_dif_mcs_range
-    };
+      // Check for inf/nans
+      bool fs_v_ok = true;
+      for (size_t i=0; i<7; i++) {
+        if (std::isnan(fs_v[i]) || std::isinf(fs_v[i])) {
+          fs_v_ok = false;
+          break;
+        }
+      }
 
-    // Check for inf/nans
-    bool fs_v_ok = true;
-    for (size_t i=0; i<7; i++) {
-      if (std::isnan(fs_v[i]) || std::isinf(fs_v[i])) {
-        fs_v_ok = false;
-        break;
+      if (fs_v_ok) {
+        int r;  // XGBoost return codes
+
+        // Create input DMatrix
+        DMatrixHandle dmat;
+        r = XGDMatrixCreateFromMat(fs_v, 1, 7, -1, &dmat);
+        if (r != 0) std::cout << XGBGetLastError() << std::endl;
+        assert(r == 0);
+
+        // Load trained model from JSON
+        const char* c_json_config = "{\"type\": 0,\"training\": false,\"iteration_begin\": 0,\"iteration_end\": 0,\"strict_shape\": false}";
+        const unsigned long int* out_shape;
+        unsigned long int out_dim;
+        const float* out_result;
+
+        r = XGBoosterPredictFromDMatrix(*booster, dmat, c_json_config,
+                                        &out_shape, &out_dim, &out_result);
+        if (r != 0) std::cout << XGBGetLastError() << std::endl;
+        assert(r == 0);
+
+        XGDMatrixFree(dmat);
+
+        int idx_max = (int) BDTClass::kInvalid;
+        float v_max = -1;
+
+        for (int k=0; k<4; k++) {
+            xgb_score_vec_->at(p).push_back(out_result[k]);
+            if (out_result[k] > v_max) {
+               v_max = out_result[k];
+               idx_max = k;
+            }
+         }
+        xgb_pid_vec_->at(p) = idx_max;
       }
     }
+  }
 
-    if (fs_v_ok) {
-      int r;  // XGBoost return codes
-
-      // Create input DMatrix
-      DMatrixHandle dmat;
-      r = XGDMatrixCreateFromMat(fs_v, 1, 7, -1, &dmat);
-      if (r != 0) std::cout << XGBGetLastError() << std::endl;
-      assert(r == 0);
-
-      // Load trained model from JSON
-      const char* c_json_config = "{\"type\": 0,\"training\": false,\"iteration_begin\": 0,\"iteration_end\": 0,\"strict_shape\": false}";
-      const unsigned long int* out_shape;
-      unsigned long int out_dim;  
-      const float* out_result;
-
-      r = XGBoosterPredictFromDMatrix(*booster, dmat, c_json_config,
-                                      &out_shape, &out_dim, &out_result);
-      if (r != 0) std::cout << XGBGetLastError() << std::endl;
-      assert(r == 0);
-
-      XGDMatrixFree(dmat);
-
-      int idx_max = (int) BDTClass::kInvalid;
-      float v_max = -1;
-
-      //for (int k=0; k<out_dim; k++) {
-      for (int k=0; k < 4; k++) {
-          xgb_score_vec_->at(p).push_back(out_result[k]);
-          if (out_result[k] > v_max) {
-             v_max = out_result[k];
-             idx_max = k;
-          }
-       }
-      xgb_pid_vec_->at(p) = idx_max;
-
-      switch ((BDTClass) idx_max) {
-        case BDTClass::kOther: sel_n_bdt_other_++; break;
-        case BDTClass::kMu: sel_n_bdt_muon_++; break;
-        case BDTClass::kPi: sel_n_bdt_pion_++; break;
-        case BDTClass::kP: sel_n_bdt_proton_++; break;
-        case BDTClass::kInvalid: sel_n_bdt_invalid_++; break;
-      }
+  for (int p=0; p<num_pf_particles_; p++) {
+    switch ((BDTClass) xgb_pid_vec_->at(p)) {
+      case BDTClass::kOther: sel_n_bdt_other_++; break;
+      case BDTClass::kMu: sel_n_bdt_muon_++; break;
+      case BDTClass::kPi: sel_n_bdt_pion_++; break;
+      case BDTClass::kP: sel_n_bdt_proton_++; break;
+      case BDTClass::kInvalid: sel_n_bdt_invalid_++; break;
+      default: break;
     }
   }
 }
@@ -1795,6 +1796,9 @@ void AnalysisEvent::apply_selection() {
         pi_mom = track_mcs_mom_mu_->at(p);
       }
 
+      // Pion momentum correction (based on muon momentum reco)
+      pi_mom += 0.032;  // 30 MeV
+
       if (pi_mom > CHARGED_PI_MOM_CUT) {
         sel_num_pion_candidates_++;
         sel_has_pion_candidate_ = true;
@@ -1810,33 +1814,35 @@ void AnalysisEvent::apply_selection() {
       float track_length = track_length_->at( p );
       if ( track_length <= 0. ) continue;
 
-      sel_has_p_candidate_ = true;
-      sel_passed_proton_pid_cut_ = true;
-      sel_num_proton_candidates_++;
+      // Consider protons within the momentum range (currently uncorrected!)
+      if ((track_kinetic_energy_p_->at(p) >= LEAD_P_MIN_MOM_CUT) &&
+          (track_kinetic_energy_p_->at(p) <= LEAD_P_MAX_MOM_CUT)) {
+        sel_has_p_candidate_ = true;
+        sel_passed_proton_pid_cut_ = true;
+        sel_num_proton_candidates_++;
 
-      // Check whether the current proton candidate fails the containment cut
-      float endx = track_endx_->at( p );
-      float endy = track_endy_->at( p );
-      float endz = track_endz_->at( p );
-      bool end_contained = this->in_proton_containment_vol( endx, endy, endz );
-      if ( !end_contained ) sel_protons_contained_ = false;
+        // Check whether the current proton candidate fails the containment cut
+        float endx = track_endx_->at( p );
+        float endy = track_endy_->at( p );
+        float endz = track_endz_->at( p );
+        bool end_contained = this->in_proton_containment_vol( endx, endy, endz );
+        if ( !end_contained ) sel_protons_contained_ = false;
+      }
     }
 
     else if (xgb_pid_vec_->at(p) == (int) BDTClass::kOther) {}
     else if (xgb_pid_vec_->at(p) == (int) BDTClass::kInvalid) {}
-    else {
-      // hmm
-    }
+    else {}
   }
 
 
   sel_CC0pi_ = sel_nu_mu_cc_ && sel_no_reco_showers_
-    && sel_muon_passed_mom_cuts_ && !sel_has_pion_candidate_;
-    //&& sel_n_bdt_other_ == 0 && sel_n_bdt_invalid_ == 0;
+    && sel_muon_passed_mom_cuts_ && !sel_has_pion_candidate_
+    && sel_n_bdt_other_ == 0 && sel_n_bdt_invalid_ == 0;
 
   sel_CC0pi_wc_ = sel_nu_mu_cc_ && sel_no_reco_showers_
-    && sel_muon_passed_wc_mom_cuts_ && !sel_has_pion_wc_candidate_;
-    //&& sel_n_bdt_other_ == 0 && sel_n_bdt_invalid_ == 0;
+    && sel_muon_passed_wc_mom_cuts_ && !sel_has_pion_wc_candidate_
+    && sel_n_bdt_other_ == 0 && sel_n_bdt_invalid_ == 0;
   
   // Don't bother to apply the cuts that involve the leading
   // proton candidate if we don't have one
@@ -1882,17 +1888,25 @@ void AnalysisEvent::find_lead_p_candidate() {
     // already been found)
     if ( p == muon_candidate_idx_ ) continue;
 
-    // Skip PFParticles that are shower-like (track scores near 0)
-    float track_score = pfp_track_score_->at( p );
-    if ( track_score <= TRACK_SCORE_CUT ) continue;
+    // Consider PID'ed protons
+    if (xgb_pid_vec_->at(p) == (int) BDTClass::kP) {
+      float track_length = track_length_->at( p );
+      if ( track_length <= 0. ) continue;
 
-    // All non-muon-candidate reco tracks are considered proton candidates
-    float track_length = track_length_->at( p );
-    if ( track_length <= 0. ) continue;
+      // Consider contained protons within the (uncorrected!) momentum range
+      if ((track_kinetic_energy_p_->at(p) >= LEAD_P_MIN_MOM_CUT) &&
+          (track_kinetic_energy_p_->at(p) <= LEAD_P_MAX_MOM_CUT)) {
 
-    if ( track_length > lead_p_track_length ) {
-      lead_p_track_length = track_length;
-      lead_p_index = p;
+        float endx = track_endx_->at( p );
+        float endy = track_endy_->at( p );
+        float endz = track_endz_->at( p );
+        bool end_contained = this->in_proton_containment_vol( endx, endy, endz );
+
+        if ( end_contained && track_length > lead_p_track_length ) {
+          lead_p_track_length = track_length;
+          lead_p_index = p;
+        }
+      }
     }
   }
 
