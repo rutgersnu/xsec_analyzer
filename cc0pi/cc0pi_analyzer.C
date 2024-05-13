@@ -1691,9 +1691,9 @@ void AnalysisEvent::apply_selection() {
   // Set sel_nu_mu_cc_ by applying those criteria
   this->apply_numu_CC_selection();
 
-  // Set flags that default to true here
-  sel_passed_proton_pid_cut_ = true;
-  sel_protons_contained_ = true;
+  // Set flags that default to true -> FALSE here
+  sel_passed_proton_pid_cut_ = false;
+  sel_protons_contained_ = false;
 
   // Set flags that default to false here
   sel_muon_passed_mom_cuts_ = false;
@@ -1814,19 +1814,24 @@ void AnalysisEvent::apply_selection() {
       float track_length = track_length_->at( p );
       if ( track_length <= 0. ) continue;
 
+      float KEp_ev = track_kinetic_energy_p_->at(p);
+      float p_mom_ev = real_sqrt( KEp_ev*KEp_ev + 2.*PROTON_MASS*KEp_ev );
+
       // Consider protons within the momentum range (currently uncorrected!)
-      if ((track_kinetic_energy_p_->at(p) >= LEAD_P_MIN_MOM_CUT) &&
-          (track_kinetic_energy_p_->at(p) <= LEAD_P_MAX_MOM_CUT)) {
-        sel_has_p_candidate_ = true;
-        sel_passed_proton_pid_cut_ = true;
-        sel_num_proton_candidates_++;
+      if ((p_mom_ev >= LEAD_P_MIN_MOM_CUT) &&
+          (p_mom_ev <= LEAD_P_MAX_MOM_CUT) ) {
 
         // Check whether the current proton candidate fails the containment cut
         float endx = track_endx_->at( p );
         float endy = track_endy_->at( p );
         float endz = track_endz_->at( p );
         bool end_contained = this->in_proton_containment_vol( endx, endy, endz );
-        if ( !end_contained ) sel_protons_contained_ = false;
+        if ( end_contained ){
+            sel_protons_contained_ = true;
+            sel_has_p_candidate_ = true;
+            sel_passed_proton_pid_cut_ = true;
+            sel_num_proton_candidates_++;
+        }
       }
     }
 
@@ -1893,9 +1898,12 @@ void AnalysisEvent::find_lead_p_candidate() {
       float track_length = track_length_->at( p );
       if ( track_length <= 0. ) continue;
 
+      float KEp = track_kinetic_energy_p_->at(p);
+      float p_mom = real_sqrt( KEp*KEp + 2.*PROTON_MASS*KEp );
+
       // Consider contained protons within the (uncorrected!) momentum range
-      if ((track_kinetic_energy_p_->at(p) >= LEAD_P_MIN_MOM_CUT) &&
-          (track_kinetic_energy_p_->at(p) <= LEAD_P_MAX_MOM_CUT)) {
+      if ((p_mom >= LEAD_P_MIN_MOM_CUT) &&
+          (p_mom <= LEAD_P_MAX_MOM_CUT)) {
 
         float endx = track_endx_->at( p );
         float endy = track_endy_->at( p );
