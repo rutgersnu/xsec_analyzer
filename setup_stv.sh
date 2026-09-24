@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Sets up the local environment for working with the STV analysis scripts
-#source /cvmfs/uboone.opensciencegrid.org/products/setup_uboone.sh
-#setup uboonecode v08_00_00_52 -q e17:prof
 
 # Sets up local environment in ANNIE ToolAnalysis container
 # (not all of these may be necessary, but it works as is)
@@ -36,4 +34,8 @@ export TF_CPP_MIN_LOG_LEVEL=2
 THIS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export STV_ANALYSIS_DIR=${THIS_DIRECTORY}
-export PATH=${PATH}:${STV_ANALYSIS_DIR}
+export PATH=${STV_ANALYSIS_DIR}/bin:${PATH}
+export LD_LIBRARY_PATH=${STV_ANALYSIS_DIR}/lib:${LD_LIBRARY_PATH}
+
+export STV_DATA_DIR=${STV_ANALYSIS_DIR}/data
+

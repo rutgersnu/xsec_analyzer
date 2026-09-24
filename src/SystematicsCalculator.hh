@@ -858,7 +858,8 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
 //          if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
 //          file_pot = temp_pot->GetVal();
 //          file_pot = temp_pot;
-          file_pot = 2.744e+20;//1.5297e+20; //ACTUALLY FIX THIS SO IT'S NOT 3.2545e16
+          file_pot = 3.5e19;
+          //file_pot = 2.744e+20;//1.5297e+20; //ACTUALLY FIX THIS SO IT'S NOT 3.2545e16
         }
         else
         {
@@ -1274,6 +1275,7 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
               // input TDirectoryFile.
               if (u_idx != universe.index_)
               {
+std::cout << u_idx << " " << universe.index_ << std::endl;
                 throw std::runtime_error("Universe sorting went wrong!");
               }
 

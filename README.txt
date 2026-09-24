@@ -3,32 +3,13 @@ Guide for ANNIE Usage of STV-Analysis
 --------------
 ***Workflow***
 --------------
-1. Enter the ANNIE ToolAnalysis container: './start_singularity.sh'
-2. Set up the environment: 'source setup.sh'
-3. Prepare input files (if necessary): 'root -l stvPrep.C'
-4. Clean and compile: 'make clean' and 'make'
+1. Enter the ANNIE ToolAnalysis container: `./start_singularity.sh`
+2. Set up the environment: `source setup_stv.sh`
+4. Clean and compile: `make clean && make`
+3. Prepare input files if needed: `bin/annie_stv_prep`
 5. Univmake: './univmake files_to_process.txt tutorial_bin_config.txt output.root'
 6. Systematic uncertainty: 'root -l tutorial_slice_plots.C'
 7. XSec & Event Rate Plots: ./chi_square_cc0pi_christian
-
--------------
-***stvPrep***
--------------
-This script (stvPrep.C) prepares ANNIE MC PhaseIITree ntuples for univmake. It creates and adds flag branches used in tutorial_bin_config.txt from existing branches to the ntuple file. Also used to create correct flux_all and GENIE All branches.
-To use:
-1. 'hadd [target file] [source file 1] ...'
-2. copy/move target file outside of /pnfs/
-3. Edit target file path in stvPrep.C to match intended input
-4. 'root -l stvPrep.C'
-
-**Notes**:
--Input file path is hardcoded in stvPrep.C line 32
--Input file gets updated, no existing branches are rewritten
--Bug: DOES NOT RUN ON FILES LOCATED IN /pnfs/ (files MUST be moved outside of /pnfs/)
--DO NOT RUN DIRECTLY ON ANNIE MC PRODUCTION FILES (files get updated, make a copy first)
--Currently only works with MC files, not real data files. Will need updates in future
--Feel free to add extra flag/category branches! Please document any additions
--Does not check if additional branches already exist
 
 --------------
 ***DVShiftE***
@@ -88,4 +69,33 @@ In place of detector systematics, ANNIE uses a generalized model based on throug
 -stv output - Currently ran with corresponding MC as both MC and fake beam data - OUTDATED
 /pnfs/annie/persistent/users/jminock/stv-output/stv-40k-output.root
 /pnfs/annie/persistent/users/jminock/stv-output/stv-400k-output.root
+
+
+ATM Refactor 9/2026
+===================
+1. `bin/annie_stv_prep INPUT.root [OUTPUT.root]` - Add cut branches, prep files
+   * Filename defaults `path/INPUT.root` -> `./INPUT.stv.root`
+   * Uses MRD efficiency map in `$STV_DATA_DIR` (i.e., `data/`)
+   * Added true event category flags (for slice plot stacks)
+   * TODO: Add `mc_*`/`sel_*` signal/selection flags
+   * TODO: MRD efficiency as ROOT histogram rather than CSV (eliminates parsing)
+2. `./bin/univmake [FILES_TO_PROCESS] [BIN_CONFIG] [OUTPUT.root] [FILE_PROPERTIES]` - Build universes
+   * Files to process: `config/input_files/files_to_process_closure.txt`
+   * Bin config: `config/ccinc/bin_config_ccinc.txt`
+   * Output: `/exp/annie/data/...` preferred
+   * File properties: `config/input_files/file_properties_closure.txt`
+   * TODO: Fix hard-coded POT (c. SystematicsCalculator.cc:861)
+3. `./bin/slice_plots_ccinc` - Plot event rates and fractional uncertanties
+   * Now plots background stacks based on event categories
+   * Note: All paths for input and config are hard-coded
+   * TODO: Review, tidy, simplify
+   * TODO: Fix hard-coded input file paths and POT
+4. TODO: `./bin/chi_square_cc0pi_christian` - Unfold and produce cross sections
+   * TODO: Review, tidy, simplify
+   * TODO: Unify with slice_plots to produce results in one step
+
+Other to-do items:
+* Restore the DV shifts in some form
+* Check MRD z efficiency
+* Final cleanup
 
