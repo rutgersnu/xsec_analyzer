@@ -1,7 +1,13 @@
-// Standard library includes
+/**
+ * Slice plotting for ANNIE.
+ */
+
+// univmake "/exp/annie/data/users/mastbaum/cc/ccinc_closure_univmake.root"
+// systcalc "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/systcalc/systcalc_data.conf"
+// slice "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/slice_config_ccinc.txt"
+
 #include <algorithm>
 
-// ROOT includes
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TFile.h"
@@ -9,10 +15,9 @@
 #include "TLegend.h"
 #include "TPad.h"
 
-// STV analysis includes
 #include "FilePropertiesManager.hh"
 #include "MCC9SystematicsCalculator.hh"
-#include "plotutils/PlotUtils.hh"
+//#include "plotutils/PlotUtils.hh"
 #include "SliceBinning.hh"
 #include "SliceHistogram.hh"
 
@@ -20,7 +25,9 @@ using NFT = NtupleFileType;
 
 //#define USE_FAKE_DATA ""
 
-void tutorial_slice_plots() {
+void annie_slice_plots(const char* univmake_file,
+                       const char* systcalc_config,
+                       const char* slice_config) {
 
   #ifdef USE_FAKE_DATA
     // Initialize the FilePropertiesManager and tell it to treat the NuWro
@@ -29,11 +36,10 @@ void tutorial_slice_plots() {
     fpm.load_file_properties( "nuwro_file_properties.txt" );
   #endif
 
-  auto* syst_ptr = new MCC9SystematicsCalculator(
-    "/exp/annie/data/users/mastbaum/cc/ccinc_closure_univmake.root",
-    "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/systcalc/systcalc_data.conf" );
+  auto* syst_ptr = new MCC9SystematicsCalculator(univmake_file, systcalc_config);
   auto& syst = *syst_ptr;
 
+  // FIXME no hardcoded POT
   const double POTMC = 3.5e19; //12.744e20;
   const double POTBNB = 3.5e19; //11.682e20;
 
@@ -50,20 +56,17 @@ void tutorial_slice_plots() {
 
   TH2D* category_hist = syst.cv_universe().hist_categ_.get();
 
-  // Total MC+EXT prediction in reco bin space. Start by getting EXT.
-  TH1D* reco_mc_plus_ext_hist = dynamic_cast< TH1D* >(
-    reco_ext_hist->Clone("reco_mc_plus_ext_hist") );
+  // Total MC prediction in reco bin space
+  TH1D* reco_mc_plus_ext_hist = dynamic_cast<TH1D*>(
+    syst.cv_universe().hist_reco_.get()->Clone("reco_mc_plus_ext_hist"));
   reco_mc_plus_ext_hist->SetDirectory( nullptr );
-
-  // Add in the CV MC prediction
-  reco_mc_plus_ext_hist->Add( syst.cv_universe().hist_reco_.get() );
 
   // Keys are covariance matrix types, values are CovMatrix objects that
   // represent the corresponding matrices
   auto* matrix_map_ptr = syst.get_covariances().release();
   auto& matrix_map = *matrix_map_ptr;
 
-  auto* sb_ptr = new SliceBinning( "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/slice_config_ccinc.txt" );
+  auto* sb_ptr = new SliceBinning(slice_config);
   auto& sb = *sb_ptr;
 
   for ( size_t sl_idx = 0u; sl_idx < sb.slices_.size(); ++sl_idx ) {
@@ -75,26 +78,34 @@ void tutorial_slice_plots() {
     SliceHistogram* slice_bnb = SliceHistogram::make_slice_histogram(
       *reco_bnb_hist, slice, &matrix_map.at("BNBstats") );
 
-//    SliceHistogram* slice_ext = SliceHistogram::make_slice_histogram(
-//      *reco_ext_hist, slice, &matrix_map.at("EXTstats") );
-
     SliceHistogram* slice_mc_plus_ext = SliceHistogram::make_slice_histogram(
       *reco_mc_plus_ext_hist, slice, &matrix_map.at("total") );
 
-    //auto chi2_result = slice_bnb->get_chi2( *slice_mc_plus_ext );
-    //std::cout << "Slice " << sl_idx << ": \u03C7\u00b2 = "
-    //  << chi2_result.chi2_ << '/' << chi2_result.num_bins_ << " bins,"
-    //  << " p-value = " << chi2_result.p_value_ << '\n';
+    // Compute chi2 with the covariance matrix
+    auto chi2_result = slice_bnb->get_chi2( *slice_mc_plus_ext );
+    std::cout << "Slice " << sl_idx << ": \u03C7\u00b2 = "
+      << chi2_result.chi2_ << '/' << chi2_result.num_bins_ << " bins,"
+      << " p-value = " << chi2_result.p_value_ << '\n';
 
     // Build a stack of categorized central-value MC predictions plus the
     // extBNB contribution in slice space
     const auto& eci = EventCategoryInterpreter::Instance();
-//    eci.set_ext_histogram_style( slice_ext->hist_.get() );
 
     THStack* slice_pred_stack = new THStack( "mc+ext", "" );
-//    slice_pred_stack->Add( slice_ext->hist_.get() ); // extBNB
 
     const auto& cat_map = eci.label_map();
+
+    // Canvas
+    TCanvas* c1 = new TCanvas;
+    TLegend* lg = new TLegend( 0.75, 0.6, 0.98, 0.98 );
+    slice_bnb->hist_->SetLineColor( kBlack );
+    slice_bnb->hist_->SetLineWidth( 1 );
+    slice_bnb->hist_->SetMarkerStyle( kFullCircle );
+    slice_bnb->hist_->SetMarkerSize( 0.8 );
+    slice_bnb->hist_->SetStats( false );
+    double ymax = std::max( slice_bnb->hist_->GetMaximum(),
+      slice_mc_plus_ext->hist_->GetMaximum() ) * 1.2;
+    slice_bnb->hist_->GetYaxis()->SetRangeUser( 0., ymax );
 
     // Go in reverse so that signal ends up on top. Note that this index is
     // one-based to match the ROOT histograms
@@ -111,22 +122,15 @@ void tutorial_slice_plots() {
 
       eci.set_mc_histogram_style( cat, temp_slice_mc->hist_.get() );
 
-      slice_pred_stack->Add( temp_slice_mc->hist_.get() );
+      TH1D* h = dynamic_cast<TH1D*>(temp_slice_mc->hist_.get());
+      slice_pred_stack->Add(h);
+
+      lg->AddEntry(h, eci.label(cat).c_str(), "f");
 
       std::string cat_col_prefix = "MC" + std::to_string( cat );
 
       --cat_bin_index;
     }
-
-    TCanvas* c1 = new TCanvas;
-    slice_bnb->hist_->SetLineColor( kBlack );
-    slice_bnb->hist_->SetLineWidth( 3 );
-    slice_bnb->hist_->SetMarkerStyle( kFullCircle );
-    slice_bnb->hist_->SetMarkerSize( 0.8 );
-    slice_bnb->hist_->SetStats( false );
-    double ymax = std::max( slice_bnb->hist_->GetMaximum(),
-      slice_mc_plus_ext->hist_->GetMaximum() ) * 1.07;
-    slice_bnb->hist_->GetYaxis()->SetRangeUser( 0., ymax );
 
     const auto &cm = &matrix_map.at("total");
     SliceHistogram* s4s = SliceHistogram::make_slice_histogram(
@@ -140,51 +144,25 @@ void tutorial_slice_plots() {
       for ( const auto& bin_pair : slice.bin_map_ ) {
         int global_bin_idx = bin_pair.first;
         double err = s4s->hist_->GetBinError( global_bin_idx );
-//	std::cout << err << std::endl;
         slice_bnb->hist_->SetBinError( global_bin_idx, err );
       }
 
-
+    slice_bnb->hist_->SetTitle("");
+    slice_bnb->hist_->SetXTitle("Reconstructed p_{#mu} (GeV/c)");
+    slice_bnb->hist_->SetYTitle("Events");
     slice_bnb->hist_->Draw( "e" );
-
     slice_pred_stack->Draw( "hist same" );
-
-    slice_mc_plus_ext->hist_->SetLineWidth( 3 );
+    slice_mc_plus_ext->hist_->SetLineWidth( 1 );
+    slice_mc_plus_ext->hist_->SetLineColor( kBlack );
     slice_mc_plus_ext->hist_->Draw( "same hist" );
+    slice_bnb->hist_->Draw( "e same" );
 
-    double chi2 = 0.;
-/*    for(int j = 1; j <= slice_bnb->hist_->GetNbinsX(); ++j){
-      if(slice_bnb->hist_->GetBinContent(j) > 0) {
-        chi2 += (slice_bnb->hist_->GetBinContent(j) - slice_mc_plus_ext->hist_->GetBinContent(j))*(slice_bnb->hist_->GetBinContent(j) - slice_mc_plus_ext->hist_->GetBinContent(j))/(slice_mc_plus_ext->hist_->GetBinContent(j));
-      }
-    }
-*/
-    for ( const auto& bin_pair : slice.bin_map_ ) {
-      int j = bin_pair.first;
-      double err = s4s->hist_->GetBinError( j );
-//	std::cout << err << std::endl;
-        if(slice_bnb->hist_->GetBinContent(j) > 0) {
-          chi2 += (slice_bnb->hist_->GetBinContent(j) - slice_mc_plus_ext->hist_->GetBinContent(j))*(slice_bnb->hist_->GetBinContent(j) - slice_mc_plus_ext->hist_->GetBinContent(j))/(err*err);
-        }
-    }
-
-    std::cout << "chi2/dof: " << chi2 << "/" << slice_bnb->hist_->GetNbinsX() << std::endl;
-//    slice_bnb->hist_->Draw( "same e" );
-
-    TLegend* lg = new TLegend( 0.75, 0.75, 0.9, 0.9 );
-    lg->AddEntry(slice_bnb->hist_.get(), "Data","l");
+    lg->AddEntry(slice_bnb->hist_.get(), "Data","ep");
     lg->AddEntry(slice_mc_plus_ext->hist_.get(), "MC","l");
     lg->Draw("same");
 
-    //std::string out_pdf_name = "plot_slice_";
-    //if ( sl_idx < 10 ) out_pdf_name += "0";
-    //out_pdf_name += std::to_string( sl_idx ) + ".pdf";
-    //c1->SaveAs( out_pdf_name.c_str() );
-
- 
-    TString nameo = Form("slice_hist_%02i.pdf", sl_idx);
+    TString nameo = Form("slice_hist_%02lu.pdf", sl_idx);
     c1->SaveAs(nameo);
-
 
     // Get the binning and axis labels for the current slice by cloning the
     // (empty) histogram owned by the Slice object
@@ -201,13 +179,17 @@ void tutorial_slice_plots() {
     // in the ROOT plot. All configured fractional uncertainties will be
     // included in the output pgfplots file regardless of whether they appear
     // in this vector.
-    const std::vector< std::string > cov_mat_keys = { "total","flux","xsec_total","MCstats","BNBstats", "detVar_total","POT","numTargets" };
- 
-/*    const std::vector< std::string > cov_mat_keys = { "total",
-      "detVar_total", "flux", "reint", "xsec_total", "POT", "numTargets",
-      "MCstats", "EXTstats", "BNBstats"
+    const std::vector< std::string > cov_mat_keys = {
+      "total",
+      "flux",
+      "xsec_total",
+      "MCstats",
+      "BNBstats",
+      "detVar_total",
+      "POT",
+      "numTargets"
     };
-*/
+ 
     // Loop over the various systematic uncertainties
     int color = 1;
     for ( const auto& pair : matrix_map ) {
@@ -218,7 +200,6 @@ void tutorial_slice_plots() {
       SliceHistogram* slice_for_syst = SliceHistogram::make_slice_histogram(
         *reco_mc_plus_ext_hist, slice, &cov_matrix );
 
-//std::cout << key << std::endl;
       // The SliceHistogram object already set the bin errors appropriately
       // based on the slice covariance matrix. Just change the bin contents
       // for the current histogram to be fractional uncertainties. Also set
@@ -245,7 +226,6 @@ void tutorial_slice_plots() {
           y = slice_for_syst->hist_->GetBinContent( global_bin_idx );
           err = slice_for_syst->hist_->GetBinError( global_bin_idx );
         }
-        if(key == "total") std::cout << err << std::endl;
         double frac = 0.;
         if ( y > 0. ) frac = err / y;
         slice_for_syst->hist_->SetBinContent( global_bin_idx, frac );
@@ -271,23 +251,17 @@ void tutorial_slice_plots() {
     }
 
     TCanvas* c2 = new TCanvas;
-    TLegend* lg2 = new TLegend( 0.3, 0.6, 0.525, 0.9 );
-    //TLegend* lg2 = new TLegend( 0.675, 0.6, 0.9, 0.9 );
+    TLegend* lg2 = new TLegend( 0.25, 0.7, 0.75, 0.85 );
 
-    //Add up total to account for corrected BNBstats
-/*    auto* total_frac_err_hist = frac_uncertainty_hists.at( "total" );
-    for ( const auto& pair : frac_uncertainty_hists ) {
-      const auto& key = pair.first;
-      if(key == "total") continue;
-      total_frac_err_hist->Add( pair.second );    
-    }
-*/
     auto* total_frac_err_hist = frac_uncertainty_hists.at("total");
     total_frac_err_hist->SetStats( false );
-    total_frac_err_hist->GetYaxis()->SetRangeUser( 0.,
-      total_frac_err_hist->GetMaximum() * 1.55 );
+    total_frac_err_hist->GetYaxis()->SetRangeUser(
+      0., total_frac_err_hist->GetMaximum() * 1.55 );
     total_frac_err_hist->SetLineColor( kBlack );
     total_frac_err_hist->SetLineWidth( 3 );
+    total_frac_err_hist->SetTitle("");
+    total_frac_err_hist->SetXTitle("Reconstructed p_{#mu} (GeV/c)");
+    total_frac_err_hist->SetYTitle("Fractional uncertainty");
     total_frac_err_hist->Draw( "hist" );
 
     lg2->AddEntry( total_frac_err_hist, "total", "l" );
@@ -300,28 +274,33 @@ void tutorial_slice_plots() {
 
       lg2->AddEntry( hist, name.c_str(), "l" );
       hist->Draw( "same hist" );
-
-//      for(int h_iter = 1; h_iter < hist->GetNbinsX(); h_iter++){
-//        std::cout << name << " frac err in bin #"<<h_iter<<" = " << hist->GetBinContent( h_iter )*100. << "%\n";
-//      }
     }
 
+    lg2->SetNColumns(2);
     lg2->Draw( "same" );
-//    for(int k = 1; k <= slice_mc_plus_ext->hist_->GetNbinsX(); ++k){
-//      std::cout << slice_mc_plus_ext->hist_->GetBinContent(k) << std::endl;
-//    }
 
-//    std::cout << "Total frac error in bin #1 = "
-//      << total_frac_err_hist->GetBinContent( 1 )*100. << "%\n";
-
-    TString name = Form("slice_syst_%02i.pdf", sl_idx);
+    TString name = Form("slice_syst_%02lu.pdf", sl_idx);
     c2->SaveAs(name);
 
-  } // slices
-
+  }
 }
 
-int main() {
-  tutorial_slice_plots();
+
+int main(int argc, char* argv[]) {
+  if (argc < 4) {
+    std::cout << "Usage: " << argv[0]
+              << " UNIVMAKE.root SYSTCALC.conf SLICE_CFG.txt"
+              << std::endl;
+    return 0;
+  }
+
+  const char* univmake_file = argv[1];
+  const char* systcalc_config = argv[2];
+  const char* slice_config = argv[3];
+
+  annie_slice_plots(univmake_file, systcalc_config, slice_config);
+
   return 0;
 }
+
+

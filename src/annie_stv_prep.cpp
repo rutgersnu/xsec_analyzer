@@ -19,10 +19,14 @@
 #include <cassert>
 #include <cstdlib>
 #include "TFile.h"
+#include "TRandom3.h"
 #include "TTree.h"
 #include "EventCategory.hh"
 
 static const double muon_m = 105.7;  // MeV/c^2
+
+static const unsigned int MRD_N_UNIV = 60;
+static const unsigned int MRD_RNG_SEED = 42;
 
 
 bool FidVol(double x, double y, double z) {
@@ -40,28 +44,19 @@ bool FidVol(double x, double y, double z) {
 }
 
 
-void breakCSV(std::string line, std::vector<double> &tokens){
-  //change line into stream
-  std::stringstream line_in(line);
-  std::string temp_token;
-  double token;
-  while (line_in.good()){
-    std::getline(line_in, temp_token, ','); //break up by comma
-    std::stringstream to_token(temp_token);
-    to_token >> token;          //turn into double
-    tokens.push_back(token);    //save to array
-  }
-}
-
-
-int findBin(double Y, int iter, std::vector<double> const &bins){
-  if(iter == (int)bins.size()) return 0;
-  if(Y >= bins.at(iter)) return findBin(Y, iter+1, bins);
-  else return iter;
-}
-
-
 void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
+  // MRD calibration inputs
+  const char* data_dir = getenv("STV_DATA_DIR");
+  std::string mrd_cal_file = std::string(data_dir) + "/mrdeff.root";
+  TFile fmrd(mrd_cal_file.c_str(), "read");
+  assert(fmrd.IsOpen());
+  TH1D* hMrdEff_temp = (TH1D*) fmrd.Get("mrdEff");
+  assert(hMrdEff_temp);
+  TH1D* hMrdEff = (TH1D*) hMrdEff_temp->Clone("hMrdEff");
+  hMrdEff->SetDirectory(nullptr);
+  fmrd.Close();
+
+  // Input tree
   TFile f_in(infile.Data(), "read");
   assert(f_in.IsOpen() && !f_in.IsZombie());
 
@@ -226,9 +221,9 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   // Branches to read
   double nuvtxx, nuvtxy, nuvtxz;
   double mcangle, mcmuonE;
-  int simpleflag, trueNuPDG;
+  int trigword, HasTank, HasMRD, TankMRDCoinc, NoVeto, simpleflag, trueNuPDG;
   int trueCC, trueNC, trueQEL, trueRES, trueDIS, trueCOH, trueMEC;
-  double simpleenergy, simplevtxx, simplevtxy, simplevtxz, PE;
+  double simpleenergy, simplevtxx, simplevtxy, simplevtxz, simpleRecoCosTheta, PE;
   int hasPi0, hasPiP, hasPiM, hasPiPC, hasPiMC, hasKP, hasKM, hasKPC, hasKMC;
   int numMRDTracks;
   //double Qij;
@@ -236,6 +231,11 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   std::vector<bool>* MRDStop = new std::vector<bool>();
   //std::vector<int>* mcFolPPDG = new std::vector<int>();
 
+  t->SetBranchAddress("trigword", &trigword);
+  t->SetBranchAddress("HasTank", &HasTank);
+  t->SetBranchAddress("HasMRD", &HasMRD);
+  t->SetBranchAddress("TankMRDCoinc", &TankMRDCoinc);
+  t->SetBranchAddress("NoVeto", &NoVeto);
   t->SetBranchAddress("simpleRecoFlag",&simpleflag);
   t->SetBranchAddress("numMRDTracks",&numMRDTracks);
   t->SetBranchAddress("MRDTrackStartY",&MRDTrackStartY);
@@ -265,6 +265,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   t->SetBranchAddress("simpleRecoVtxX",&simplevtxx);
   t->SetBranchAddress("simpleRecoVtxY",&simplevtxy);
   t->SetBranchAddress("simpleRecoVtxZ",&simplevtxz);
+  t->SetBranchAddress("simpleRecoCosTheta",&simpleRecoCosTheta);
   t->SetBranchAddress("promptMuonTotalPE",&PE);
   t->SetBranchAddress("trueMuonEnergy",&mcmuonE);
   t->SetBranchAddress("trueAngle",&mcangle);
@@ -317,6 +318,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
 
   int category;
   bool mc_ccinc_signal;
+  bool sel_ccinc;
   bool mcfv;
   bool recofv, recoMRDInc, recoMRD0pi, reco0pi;
   double recop, recopc, recoPE;
@@ -328,6 +330,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
 
   TBranch* b_category = to->Branch("category", &category);
   TBranch* b_ccinc_signal = to->Branch("mc_ccinc_signal", &mc_ccinc_signal);
+  TBranch* b_sel_ccinc = to->Branch("sel_ccinc", &sel_ccinc);
   TBranch* TFV = to->Branch("trueFV", &mcfv);
   TBranch* RFV = to->Branch("recoFV", &recofv);
   TBranch* RPE = to->Branch("recoPE", &recoPE);
@@ -345,20 +348,23 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   TBranch* WAll = to->Branch("weight_All_UBGenie", &All_weight);
   TBranch* WfAll = to->Branch("weight_flux_all", &flux_All);
 
-  // MRD calibration inputs. TODO: Use a TH1D.
-  const char* data_dir = getenv("STV_DATA_DIR");
-  std::string mrd_cal_file = std::string(data_dir) + "MRDEffUncYlarge.txt";
+  // MRD efficiency weights: uncorrelated throws for each bin and universe
+  TRandom3 rngMrd;
+  rngMrd.SetSeed(MRD_RNG_SEED);
 
-  std::vector<double> bins_front, factorY;
-  std::string bins_front_str, factorY_str;
+  std::vector<std::vector<double> > mrd_reweight_vector;
+  for (int i=0; i<hMrdEff->GetNbinsX(); i++) {
+    std::vector<double> universes;
+    for (unsigned j=0; j<MRD_N_UNIV; j++) {
+      double mrd_err = hMrdEff->GetBinError(i+1);
+      universes.push_back(rngMrd.Gaus(1.0, mrd_err));
+    }
+    mrd_reweight_vector.push_back(universes);
+  }
 
-  std::ifstream cal_file(mrd_cal_file.c_str(), std::ios::in);
-  cal_file >> bins_front_str;
-  cal_file >> factorY_str;
-  cal_file.close();
-
-  breakCSV(bins_front_str, bins_front);
-  breakCSV(factorY_str, factorY);
+  std::vector<double>* MRDUnc = new std::vector<double>();
+  TBranch* MRDU = to->Branch("weight_MRDUnc", &MRDUnc);
+  MRDUnc->resize(MRD_N_UNIV);
 
   // Event loop
   for (Long64_t i=0; i<t->GetEntries(); i++) {
@@ -387,6 +393,21 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
     recoMRDInc = numMRDTracks > 0 ? MRDStop->at(0) : false;
     //reco0pi = ((PE > 200.*Qij*Qij) && (PE < 2000.*std::cbrt(4.5-Qij)+1500.));
 
+    sel_ccinc = (
+         (trigword == 5)
+      && (HasTank == 1)
+      && (HasMRD == 1)
+      && (TankMRDCoinc == 1)
+      && (NoVeto == 1)
+      && (simpleflag == 1)
+      && (recoMRDInc)
+      && (recofv)
+      && (recoPE)
+      && (simpleRecoCosTheta > 0.8)
+      && (recopc >= 600)
+      && (recopc < 1200)
+    );
+     
     // Event categories
     category = kUnknown;
     int abs_nu_pdg = std::abs(trueNuPDG);
@@ -425,12 +446,20 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
     }
 
     // MRD efficiency
-    mrd_eff = 1.0;  // assign 1 for no MRD tracks
+    mrd_eff = 1.0;  // assign 1 by default for no MRD tracks
+    std::fill(MRDUnc->begin(), MRDUnc->end(), 1.0); 
+
     for (size_t j=0; j<MRDTrackStartY->size(); j++) {
       if (MRDStop->at(j)) {
         double MRD_Y = MRDTrackStartY->at(j);
-        int binY = findBin(MRD_Y, 0, bins_front);
-        mrd_eff *= factorY[binY];
+        if (std::abs(MRD_Y) > 1.3195) continue;
+
+        int ybin = hMrdEff->FindBin(MRD_Y);
+        mrd_eff *= hMrdEff->GetBinContent(ybin);
+
+        for (unsigned k=0; k<MRD_N_UNIV; k++) {
+          MRDUnc->at(j) *= mrd_reweight_vector.at(ybin-1).at(j);
+        }
       }
     }
 

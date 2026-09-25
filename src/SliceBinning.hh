@@ -380,7 +380,7 @@ SliceBinning::SliceBinning( const std::string& config_file_name ) {
 
       in_file >> rmm_reco_bin_idx >> num_root_bins;
 
-      for ( int rtb = 0; rtb < num_root_bins; ++rtb ) {
+      for ( size_t rtb = 0; rtb < num_root_bins; ++rtb ) {
 
         // Store the bin indices along each defined axis
         std::vector< int > av_bin_indices;

@@ -205,8 +205,8 @@ struct RecoBin {
     RecoBin( const std::string& cuts = "",
       RecoBinType bin_type = kOrdinaryRecoBin,
       int block_idx = -1 )
-      : type_( bin_type ), selection_cuts_( cuts ),
-      block_index_( block_idx ) {}
+      : selection_cuts_( cuts ), type_( bin_type ),
+        block_index_( block_idx ) {}
 
     // Cuts to use in TTree::Draw for filling the bin. Any overall event weight
     // included here will be ignored. It is up to the user to ensure that only

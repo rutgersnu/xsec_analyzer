@@ -1697,7 +1697,7 @@ std::unique_ptr<CovMatrixMap> SystematicsCalculator::get_covariances() const
       int num_cm_bins = this->get_covariance_matrix_size();
 
       const auto &cv_univ = this->cv_universe();
-      for (size_t a = 0u; a < num_cm_bins; ++a)
+      for (int a = 0; a < num_cm_bins; ++a)
       {
 
         double cv_a = this->evaluate_observable(cv_univ, a);
@@ -2009,7 +2009,7 @@ std::unique_ptr<TMatrixD> SystematicsCalculator::get_cv_reco_selected() const
 
   auto result = std::make_unique<TMatrixD>(num_ordinary_reco_bins_, 1);
 
-  for (int r = 0; r < num_ordinary_reco_bins_; ++r)
+  for (size_t r = 0; r < num_ordinary_reco_bins_; ++r)
   {
     double events = 0.;
 
@@ -2041,7 +2041,7 @@ SystematicsCalculator::get_cv_ordinary_reco_helper(bool return_bkgd) const
 
   auto result = std::make_unique<TMatrixD>(num_ordinary_reco_bins_, 1);
 
-  for (int r = 0; r < num_ordinary_reco_bins_; ++r)
+  for (size_t r = 0; r < num_ordinary_reco_bins_; ++r)
   {
 
     // Start by tallying the EXT contribution in the current reco bin. Note
@@ -2119,7 +2119,7 @@ MeasuredEvents SystematicsCalculator::get_measured_events() const
   // Create the vector of measured event counts in the ordinary reco bins
   const TH1D *d_hist = data_hists_.at(NFT::kOnBNB).get(); // BNB data
   TMatrixD ordinary_data(num_ordinary_reco_bins_, 1);
-  for (int r = 0; r < num_ordinary_reco_bins_; ++r)
+  for (size_t r = 0; r < num_ordinary_reco_bins_; ++r)
   {
     // Switch to using the one-based TH1D index when retrieving these values
     double bnb_events = d_hist->GetBinContent(r + 1);

@@ -77,19 +77,16 @@ ATM Refactor 9/2026
    * Filename defaults `path/INPUT.root` -> `./INPUT.stv.root`
    * Uses MRD efficiency map in `$STV_DATA_DIR` (i.e., `data/`)
    * Added true event category flags (for slice plot stacks)
-   * TODO: Add `mc_*`/`sel_*` signal/selection flags
-   * TODO: MRD efficiency as ROOT histogram rather than CSV (eliminates parsing)
-2. `./bin/univmake [FILES_TO_PROCESS] [BIN_CONFIG] [OUTPUT.root] [FILE_PROPERTIES]` - Build universes
+   * TODO: Add in weight branches currently in other preprocessing scripts
+2. `./bin/univmake [FILES_TO_PROCESS] [BIN_CONFIG] [OUTPUT.root] [FILE_PROPS]` - Build universes
    * Files to process: `config/input_files/files_to_process_closure.txt`
    * Bin config: `config/ccinc/bin_config_ccinc.txt`
    * Output: `/exp/annie/data/...` preferred
    * File properties: `config/input_files/file_properties_closure.txt`
    * TODO: Fix hard-coded POT (c. SystematicsCalculator.cc:861)
-3. `./bin/slice_plots_ccinc` - Plot event rates and fractional uncertanties
+3. `./bin/slice_plots_ccinc [UNIVMAKE] [SYST_CONFIG] [BIN_CONFIG]` - Plot event rates and fractional uncertanties
    * Now plots background stacks based on event categories
-   * Note: All paths for input and config are hard-coded
-   * TODO: Review, tidy, simplify
-   * TODO: Fix hard-coded input file paths and POT
+   * TODO: Fix hard-coded POT
 4. TODO: `./bin/chi_square_cc0pi_christian` - Unfold and produce cross sections
    * TODO: Review, tidy, simplify
    * TODO: Unify with slice_plots to produce results in one step
