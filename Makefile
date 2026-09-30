@@ -5,7 +5,7 @@ LIB_DIR = ./lib
 
 PLOTUTILS_SRCS = src/plotutils/PlotUtils.cpp src/plotutils/HistUtils.cpp src/plotutils/GridCanvas.cpp src/plotutils/MnvColors.cpp src/plotutils/HistFolio_slim.cpp src/plotutils/UBTH2Poly.cpp
 
-all: dirs bin/chi_square_cc0pi_christian bin/univmake
+all: dirs bin/chi_square_cc0pi_christian bin/univmake bin/annie_stv_prep bin/slice_plots_ccinc
 
 dirs:
 	@mkdir -p bin lib
