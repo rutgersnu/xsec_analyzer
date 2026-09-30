@@ -13,17 +13,41 @@
 #include "TFile.h"
 #include "THStack.h"
 #include "TLegend.h"
+#include "TMatrixD.h"
 #include "TPad.h"
+#include "TStyle.h"
 
 #include "FilePropertiesManager.hh"
 #include "MCC9SystematicsCalculator.hh"
-//#include "plotutils/PlotUtils.hh"
 #include "SliceBinning.hh"
 #include "SliceHistogram.hh"
+#include "WienerSVDUnfolder.hh"
+#include "AnnieGeometryTools.hh"
+
 
 using NFT = NtupleFileType;
 
 //#define USE_FAKE_DATA ""
+
+TH1D* MatrixToTH1(const TMatrixD& m, const TString& name) {
+  int n = m.GetNrows();
+  TH1D* h1 = new TH1D(name, "", n, 0, n);
+
+  for (int i=0, bin=1; i<n; i++, bin++) {
+    h1->SetBinContent(bin, m(i, 0));
+  }
+
+  return h1;
+}
+
+TMatrixD* TH1ToMatrix(const TH1* h) {
+  TMatrixD* m = new TMatrixD(h->GetNbinsX()-1, 1);
+  for (int i=1; i<=h->GetNbinsX()-1; i++) {
+    m->operator()(i-1, 0) = h->GetBinContent(i);
+  }
+  return m;
+}
+
 
 void annie_slice_plots(const char* univmake_file,
                        const char* systcalc_config,
@@ -281,8 +305,99 @@ void annie_slice_plots(const char* univmake_file,
 
     TString name = Form("slice_syst_%02lu.pdf", sl_idx);
     c2->SaveAs(name);
-
   }
+
+  // Analysis, unfolding, etc.
+  // Smearing
+  auto smearcept_ptr = syst.get_cv_smearceptance_matrix();
+
+  TCanvas* c3 = new TCanvas();
+  TH2D* hSmear = new TH2D(*smearcept_ptr);
+  gStyle->SetOptStat(0);
+  hSmear->Draw("hist colz text");
+  hSmear->GetXaxis()->SetTitle("True p_{#mu} bin");
+  hSmear->GetYaxis()->SetTitle("Reco p_{#mu} bin");
+  c3->SaveAs("smearcept.pdf");
+
+  // Unfolding
+  std::unique_ptr<Unfolder> unfolder(new WienerSVDUnfolder(
+    true, WienerSVDUnfolder::RegularizationMatrixType::kFirstDeriv));
+
+  auto result = unfolder->unfold(syst);
+
+  TCanvas* c4 = new TCanvas();
+  TMatrixD* AC = result.add_smear_matrix_.get();
+  TH2D* hAC = new TH2D(*AC);
+  hAC->SetXTitle("True? p_{#mu} bin");
+  hAC->SetYTitle("Unfolded p_{#mu} bin");
+  hAC->Draw("colz text");
+  c4->SaveAs("ac_matrix.pdf");
+
+  TH2D* hUnfCov = new TH2D(*result.cov_matrix_);
+  hUnfCov->SetXTitle("Unfolded p_{#mu} bin");
+  hUnfCov->SetYTitle("Unfolded p_{#mu} bin");
+  hUnfCov->Draw("colz text");
+  c4->SaveAs("cov_matrix.pdf");
+
+  TMatrixDDiag* cov_diag = new TMatrixDDiag(*result.cov_matrix_);
+
+  // Scale by flux/N and bin widths
+  double total_pot = syst.total_bnb_data_pot_;
+  double integ_flux = integrated_numu_flux_in_FV(total_pot);
+  double num_tgt = num_O_targets_in_FV();
+  double conv_factor = (num_tgt * integ_flux) / 1e38;
+
+  std::cout << "POT: " << total_pot << std::endl;
+  std::cout << "integ_flux: " << integ_flux << std::endl;
+  std::cout << "num_tgt: " << num_tgt << std::endl;
+  std::cout << "conv_factor: " << conv_factor << std::endl;
+
+  const auto& slice = sb.slices_.at(0);  // Slice 0
+  int nbins = slice.hist_->GetNbinsX();
+  TH1D* h_bin_widths_mev = \
+    new TH1D("h_bin_widths_mev", "", nbins, 0, nbins);
+
+  for (int bin=1; bin<=nbins+1; bin++) {
+    h_bin_widths_mev->SetBinContent(bin, slice.hist_->GetBinWidth(bin));
+  }
+
+  TH1D* hSignal = MatrixToTH1(*result.unfolded_signal_, "asdf2");
+  hSignal->Sumw2();
+  hSignal->Scale(1.0 / conv_factor);
+  hSignal->Divide(h_bin_widths_mev);
+  hSignal->SetXTitle("p_{#mu} bin");
+  hSignal->SetYTitle("d#sigma/dp_{#mu} (10^{-38} cm^{2}/(MeV/C)/^{16}O)");
+  hSignal->Draw("e1");
+  hSignal->SetLineColor(kBlack);
+  hSignal->SetMarkerSize(0.05);
+  hSignal->GetYaxis()->SetRangeUser(0, 0.005);
+
+  TH1D* genie_cv_truth_t = syst.cv_universe().hist_true_.get();
+  TMatrixD genie_cv_truth_m(
+    *AC,
+    TMatrixD::EMatrixCreatorsOp2::kMult,
+    *TH1ToMatrix(genie_cv_truth_t)
+  );
+  TH1D* genie_cv_truth = MatrixToTH1(genie_cv_truth_m, "truth");
+  genie_cv_truth->Sumw2();
+  genie_cv_truth->Scale(1.0 / conv_factor);
+  genie_cv_truth->Divide(h_bin_widths_mev);
+  genie_cv_truth->SetLineColor(kRed);
+  genie_cv_truth->SetLineWidth(2);
+  genie_cv_truth->Draw("hist same");
+
+  //TH1D* hTrueSignal = MatrixToTH1(*syst.get_cv_true_signal(), "asdf");
+  //hTrueSignal->Sumw2();
+  //hTrueSignal->Scale(1.0 / conv_factor);
+  //hTrueSignal->Divide(h_bin_widths_mev);
+  //hTrueSignal->SetLineColor(kBlue);
+  //hTrueSignal->SetLineWidth(2);
+  //hTrueSignal->Draw("hist same");
+
+  hSignal->Draw("e1 same");
+
+  c4->SetLeftMargin(0.14);
+  c4->SaveAs("xs.pdf");
 }
 
 

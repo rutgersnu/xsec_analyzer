@@ -77,7 +77,6 @@ ATM Refactor 9/2026
    * Filename defaults `path/INPUT.root` -> `./INPUT.stv.root`
    * Uses MRD efficiency map in `$STV_DATA_DIR` (i.e., `data/`)
    * Added true event category flags (for slice plot stacks)
-   * TODO: Add in weight branches currently in other preprocessing scripts
 2. `./bin/univmake [FILES_TO_PROCESS] [BIN_CONFIG] [OUTPUT.root] [FILE_PROPS]` - Build universes
    * Files to process: `config/input_files/files_to_process_closure.txt`
    * Bin config: `config/ccinc/bin_config_ccinc.txt`
@@ -85,14 +84,13 @@ ATM Refactor 9/2026
    * File properties: `config/input_files/file_properties_closure.txt`
    * TODO: Fix hard-coded POT (c. SystematicsCalculator.cc:861)
 3. `./bin/slice_plots_ccinc [UNIVMAKE] [SYST_CONFIG] [BIN_CONFIG]` - Plot event rates and fractional uncertanties
-   * Now plots background stacks based on event categories
+   * Plots background stacks based on event categories, AC matrix, covariance,
+     smearing, and unfolded cross section.
    * TODO: Fix hard-coded POT
 4. TODO: `./bin/chi_square_cc0pi_christian` - Unfold and produce cross sections
-   * TODO: Review, tidy, simplify
-   * TODO: Unify with slice_plots to produce results in one step
+   * WIP: Unify with slice_plots to produce results in one step
 
 Other to-do items:
 * Restore the DV shifts in some form
 * Check MRD z efficiency
-* Final cleanup
 
