@@ -1,6 +1,5 @@
 *.root
 *.pdf
-*.txt
 univmake
 analyzer
 cc0pi_analyzer

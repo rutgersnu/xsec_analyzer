@@ -1,0 +1,6 @@
+/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_bg_ntuple.root
+#/pnfs/annie/persistent/users/jminock/v1_3_0_ntuples/PhaseIITree_40k_shifted_ntuple.root
+/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_400k_DV_ntuple.root
+/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_1mil_stv_ntuple_1.root
+/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_400k_DVCV_ntuple.root
+/pnfs/annie/persistent/users/jminock/fake-data-nuwro/stv_ntuples/PhaseIITree_400k_nuwro_ntuple.root

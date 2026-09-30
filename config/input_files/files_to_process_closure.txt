@@ -1,0 +1,3 @@
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged.single_ev.stv.root
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged.stv.root
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged_copy.stv.root

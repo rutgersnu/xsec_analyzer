@@ -1,0 +1,124 @@
+# Trigger counts and POT exposures are taken from the searching4nues
+# spreadsheet: tinyurl.com/pelee-nue-ntuples
+# file_name run file_type [triggers POT (for data only)]
+#
+# Open beam-on data
+# /uboone/data/users/gardiner/ntuples-stv/stv-data_bnb_mcc9.1_v08_00_00_25_reco2_C1_beam_good_reco2_5e19.root 1 onBNB 10080350 4.54e19
+# /uboone/data/users/gardiner/ntuples-stv/stv-data_bnb_mcc9.1_v08_00_00_25_reco2_G1_beam_good_reco2_1e19.root 3 onBNB  2271036 9.43e18
+#
+# Beam-off data
+/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_bg_ntuple.root 1 extBNB 1 0
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 extBNB 20000 0
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 extBNB 20000 0
+#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_C_all_reco2.root 1 extBNB 65498807 0
+#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_D_E_all_reco2.root 2 extBNB 152404890 0
+#/uboone/data/users/gardiner/ntuples-stv/stv-data_extbnb_mcc9.1_v08_00_00_25_reco2_F_G_all_reco2.root 3 extBNB 214555174 0
+#
+# Full beam-on data
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_large_unweighted_ntuple.root 1 onBNB 1895996 1.463e21
+#/pnfs/annie/persistent/users/jminock/test_data_2percent/PhaseIITree_2percent_data_ntuple.root 1 onBNB 1885393 2.997e18
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_noWeight_ntuples/PhaseIITree_FD_stv_ntuple.root 1 onBNB 3410762 2.744e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccmec-dn.root 1 onBNB 437033 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccmec-up.root 1 onBNB 449936 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccqel-dn.root 1 onBNB 412453 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccqel-up.root 1 onBNB 474530 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccres-dn.root 1 onBNB 420431 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_ccres-up.root 1 onBNB 465738 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_flux-dn.root 1 onBNB 373855 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_flux-up.root 1 onBNB 514323 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_pmu-dn.root 1 onBNB 442997 1.7e20
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/fake-data-genie/fake_data_pmu-up.root 1 onBNB 444577 1.7e20
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 onBNB 20000 1.56e19
+#/uboone/data/users/gardiner/ntuples-stv/stv-run3_neutrinoselection_filt_numu_ALL.root 3 onBNB 61012955 2.55e20
+#
+# Dirt MC samples
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 dirtMC 20000 1.56e19
+#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_dirt_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root 3 dirtMC
+#
+# Intrinsic nue MC samples
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 nueMC 20000 1.56e19
+#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_intrinsice_nue_uboone_overlay_mcc9.1_v08_00_00_26_run3_reco2_reco2.root 3 nueMC
+#
+# numu MC samples
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_large_unweighted_ntuple.root 1 numuMC
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_ntuples/PhaseIITree_numuMC_stv_ntuple.root 1 numuMC
+#/pnfs/annie/persistent/users/jminock/v1_3_3_stv_ntuples/PhaseIITree_1mil_stv_ntuple_2.root 1 numuMC
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 numuMC
+#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run1_reco2_reco2.root 1 numuMC
+#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run2_reco2_D1D2_reco2.root 2 numuMC
+#/uboone/data/users/gardiner/ntuples-stv/stv-prodgenie_bnb_nu_uboone_overlay_mcc9.1_v08_00_00_26_filter_run3_reco2_G_reco2.root 3 numuMC
+#
+# detVar MC samples
+#/pnfs/annie/persistent/users/jminock/v1_3_1_ntuples/PhaseIITree_40k_ntuple.root 1 detVarCVExtra
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_CV_stv_ntuple.root 1 detVarCV
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV1_stv_ntuple.root 1 detVarShiftE1
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV2_stv_ntuple.root 1 detVarShiftE2
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV3_stv_ntuple.root 1 detVarShiftE3
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV4_stv_ntuple.root 1 detVarShiftE4
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV5_stv_ntuple.root 1 detVarShiftE5
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV6_stv_ntuple.root 1 detVarShiftE6
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV7_stv_ntuple.root 1 detVarShiftE7
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV8_stv_ntuple.root 1 detVarShiftE8
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV9_stv_ntuple.root 1 detVarShiftE9
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV10_stv_ntuple.root 1 detVarShiftE10
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV11_stv_ntuple.root 1 detVarShiftE11
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV12_stv_ntuple.root 1 detVarShiftE12
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV13_stv_ntuple.root 1 detVarShiftE13
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV14_stv_ntuple.root 1 detVarShiftE14
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV15_stv_ntuple.root 1 detVarShiftE15
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV16_stv_ntuple.root 1 detVarShiftE16
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV17_stv_ntuple.root 1 detVarShiftE17
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV18_stv_ntuple.root 1 detVarShiftE18
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV19_stv_ntuple.root 1 detVarShiftE19
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV20_stv_ntuple.root 1 detVarShiftE20
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV21_stv_ntuple.root 1 detVarShiftE21
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV22_stv_ntuple.root 1 detVarShiftE22
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV23_stv_ntuple.root 1 detVarShiftE23
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV24_stv_ntuple.root 1 detVarShiftE24
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV25_stv_ntuple.root 1 detVarShiftE25
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV26_stv_ntuple.root 1 detVarShiftE26
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV27_stv_ntuple.root 1 detVarShiftE27
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV28_stv_ntuple.root 1 detVarShiftE28
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV29_stv_ntuple.root 1 detVarShiftE29
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV30_stv_ntuple.root 1 detVarShiftE30
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV31_stv_ntuple.root 1 detVarShiftE31
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV32_stv_ntuple.root 1 detVarShiftE32
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV33_stv_ntuple.root 1 detVarShiftE33
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV34_stv_ntuple.root 1 detVarShiftE34
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV35_stv_ntuple.root 1 detVarShiftE35
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV36_stv_ntuple.root 1 detVarShiftE36
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV37_stv_ntuple.root 1 detVarShiftE37
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV38_stv_ntuple.root 1 detVarShiftE38
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV39_stv_ntuple.root 1 detVarShiftE39
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV40_stv_ntuple.root 1 detVarShiftE40
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV41_stv_ntuple.root 1 detVarShiftE41
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV42_stv_ntuple.root 1 detVarShiftE42
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV43_stv_ntuple.root 1 detVarShiftE43
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV44_stv_ntuple.root 1 detVarShiftE44
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV45_stv_ntuple.root 1 detVarShiftE45
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV46_stv_ntuple.root 1 detVarShiftE46
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV47_stv_ntuple.root 1 detVarShiftE47
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV48_stv_ntuple.root 1 detVarShiftE48
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV49_stv_ntuple.root 1 detVarShiftE49
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV50_stv_ntuple.root 1 detVarShiftE50
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV51_stv_ntuple.root 1 detVarShiftE51
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV52_stv_ntuple.root 1 detVarShiftE52
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV53_stv_ntuple.root 1 detVarShiftE53
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV54_stv_ntuple.root 1 detVarShiftE54
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV55_stv_ntuple.root 1 detVarShiftE55
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV56_stv_ntuple.root 1 detVarShiftE56
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV57_stv_ntuple.root 1 detVarShiftE57
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV58_stv_ntuple.root 1 detVarShiftE58
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV59_stv_ntuple.root 1 detVarShiftE59
+/pnfs/annie/persistent/users/jminock/v1_3_4_world_stv_DV_ntuples/PhaseIITree_DV60_stv_ntuple.root 1 detVarShiftE60
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 onBNB 20000 1.56e19
+#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_X_reco2_reco2.root 3 detVarWMX
+#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_YZ_reco2_reco2.root 3 detVarWMYZ
+#
+# NuWro numuMC
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 1 altCVMC 20000 1.56e19
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 2 altCVMC 20000 1.56e19
+#/exp/annie/data/users/jminock/standard_tank_ntuples/PhaseIITree_20k_ntuple.root 3 altCVMC 20000 1.56e19
+#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run1_NuWro_reco2_reco2.root 1 altCVMC
+#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run2_NuWro_reco2_reco2.root 2 altCVMC
+#/uboone/data/users/gardiner/ntuples-stv/stv-high_stat_prodgenie_bnb_nu_overlay_DetVar_Run3_NuWro_reco2_reco2.root 3 altCVMC

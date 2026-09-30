@@ -1,0 +1,3 @@
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged.single_ev.stv.root 1 extBNB 1 0
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged.stv.root 1 onBNB 3567 3.5e19
+/exp/annie/data/users/mastbaum/cc/mc/PhaseIITree_merged_copy.stv.root 1 numuMC
