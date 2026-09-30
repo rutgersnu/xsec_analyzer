@@ -2,10 +2,6 @@
  * Slice plotting for ANNIE.
  */
 
-// univmake "/exp/annie/data/users/mastbaum/cc/ccinc_closure_univmake.root"
-// systcalc "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/systcalc/systcalc_data.conf"
-// slice "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/slice_config_ccinc.txt"
-
 #include <algorithm>
 
 #include "TAxis.h"
@@ -29,6 +25,34 @@ using NFT = NtupleFileType;
 
 //#define USE_FAKE_DATA ""
 
+// FIXME no hardcoded POT
+const double POTMC = 3.5e19; //12.744e20;
+const double POTBNB = 3.5e19; //11.682e20;
+
+// univmake "/exp/annie/data/users/mastbaum/cc/ccinc_closure_univmake.root"
+// systcalc "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/systcalc/systcalc_data.conf"
+// slice "/exp/annie/app/users/mastbaum/cc/xsec_analyzer/ccinc/slice_config_ccinc.txt"
+
+
+/** Load configurations and launch plots and analysis. */
+void annie_slice_plots(const char* univmake_file,
+                       const char* systcalc_config,
+                       const char* slice_config);
+
+/** Draw stacked event rate plot for each slice. */
+void plot_slice_rates(const SystematicsCalculator& syst,
+                      const SliceBinning& sb);
+
+/** Draw fractional uncertainty plot for each slice. */
+void plot_slice_frac_err(const SystematicsCalculator& syst,
+                         const SliceBinning& sb);
+
+/** Extract unfolded cross section and final plots. */
+void extract_xs(const SystematicsCalculator& syst,
+                const SliceBinning& sb);
+
+
+// Move to MatrixUtils
 TH1D* MatrixToTH1(const TMatrixD& m, const TString& name) {
   int n = m.GetNrows();
   TH1D* h1 = new TH1D(name, "", n, 0, n);
@@ -40,6 +64,8 @@ TH1D* MatrixToTH1(const TMatrixD& m, const TString& name) {
   return h1;
 }
 
+
+// Move to MatrixUtils
 TMatrixD* TH1ToMatrix(const TH1* h) {
   TMatrixD* m = new TMatrixD(h->GetNbinsX()-1, 1);
   for (int i=1; i<=h->GetNbinsX()-1; i++) {
@@ -52,7 +78,6 @@ TMatrixD* TH1ToMatrix(const TH1* h) {
 void annie_slice_plots(const char* univmake_file,
                        const char* systcalc_config,
                        const char* slice_config) {
-
   #ifdef USE_FAKE_DATA
     // Initialize the FilePropertiesManager and tell it to treat the NuWro
     // MC ntuples as if they were data
@@ -63,10 +88,17 @@ void annie_slice_plots(const char* univmake_file,
   auto* syst_ptr = new MCC9SystematicsCalculator(univmake_file, systcalc_config);
   auto& syst = *syst_ptr;
 
-  // FIXME no hardcoded POT
-  const double POTMC = 3.5e19; //12.744e20;
-  const double POTBNB = 3.5e19; //11.682e20;
+  auto* sb_ptr = new SliceBinning(slice_config);
+  auto& sb = *sb_ptr;
 
+  plot_slice_rates(syst, sb);
+  plot_slice_frac_err(syst, sb);
+  extract_xs(syst, sb);
+}
+
+
+void plot_slice_rates(const SystematicsCalculator& syst,
+                      const SliceBinning& sb) {
   // Get access to the relevant histograms owned by the SystematicsCalculator
   // object. These contain the reco bin counts that we need to populate the
   // slices below.
@@ -90,9 +122,6 @@ void annie_slice_plots(const char* univmake_file,
   auto* matrix_map_ptr = syst.get_covariances().release();
   auto& matrix_map = *matrix_map_ptr;
 
-  auto* sb_ptr = new SliceBinning(slice_config);
-  auto& sb = *sb_ptr;
-
   for ( size_t sl_idx = 0u; sl_idx < sb.slices_.size(); ++sl_idx ) {
 
     const auto& slice = sb.slices_.at( sl_idx );
@@ -113,27 +142,15 @@ void annie_slice_plots(const char* univmake_file,
 
     // Build a stack of categorized central-value MC predictions plus the
     // extBNB contribution in slice space
-    const auto& eci = EventCategoryInterpreter::Instance();
-
     THStack* slice_pred_stack = new THStack( "mc+ext", "" );
-
-    const auto& cat_map = eci.label_map();
-
-    // Canvas
-    TCanvas* c1 = new TCanvas;
     TLegend* lg = new TLegend( 0.75, 0.6, 0.98, 0.98 );
-    slice_bnb->hist_->SetLineColor( kBlack );
-    slice_bnb->hist_->SetLineWidth( 1 );
-    slice_bnb->hist_->SetMarkerStyle( kFullCircle );
-    slice_bnb->hist_->SetMarkerSize( 0.8 );
-    slice_bnb->hist_->SetStats( false );
-    double ymax = std::max( slice_bnb->hist_->GetMaximum(),
-      slice_mc_plus_ext->hist_->GetMaximum() ) * 1.2;
-    slice_bnb->hist_->GetYaxis()->SetRangeUser( 0., ymax );
+    const auto& eci = EventCategoryInterpreter::Instance();
+    const auto& cat_map = eci.label_map();
 
     // Go in reverse so that signal ends up on top. Note that this index is
     // one-based to match the ROOT histograms
     int cat_bin_index = cat_map.size();
+    std::vector<std::pair<TH1D*, std::string> > legend_entries;
     for ( auto iter = cat_map.crbegin(); iter != cat_map.crend(); ++iter )
     {
       EventCategory cat = iter->first;
@@ -151,6 +168,8 @@ void annie_slice_plots(const char* univmake_file,
 
       lg->AddEntry(h, eci.label(cat).c_str(), "f");
 
+      std::cout << eci.label(cat).c_str() << std::endl;
+
       std::string cat_col_prefix = "MC" + std::to_string( cat );
 
       --cat_bin_index;
@@ -160,16 +179,27 @@ void annie_slice_plots(const char* univmake_file,
     SliceHistogram* s4s = SliceHistogram::make_slice_histogram(
         *reco_mc_plus_ext_hist, slice, cm );
 
-      // The SliceHistogram object already set the bin errors appropriately
-      // based on the slice covariance matrix. Just change the bin contents
-      // for the current histogram to be fractional uncertainties. Also set
-      // the "uncertainties on the uncertainties" to zero.
-      // TODO: revisit this last bit, possibly assign bin errors here
-      for ( const auto& bin_pair : slice.bin_map_ ) {
-        int global_bin_idx = bin_pair.first;
-        double err = s4s->hist_->GetBinError( global_bin_idx );
-        slice_bnb->hist_->SetBinError( global_bin_idx, err );
-      }
+    // The SliceHistogram object already set the bin errors appropriately
+    // based on the slice covariance matrix. Just change the bin contents
+    // for the current histogram to be fractional uncertainties. Also set
+    // the "uncertainties on the uncertainties" to zero.
+    // TODO: revisit this last bit, possibly assign bin errors here
+    for ( const auto& bin_pair : slice.bin_map_ ) {
+      int global_bin_idx = bin_pair.first;
+      double err = s4s->hist_->GetBinError( global_bin_idx );
+      slice_bnb->hist_->SetBinError( global_bin_idx, err );
+    }
+
+    // Canvas
+    TCanvas* c1 = new TCanvas;
+    slice_bnb->hist_->SetLineColor( kBlack );
+    slice_bnb->hist_->SetLineWidth( 1 );
+    slice_bnb->hist_->SetMarkerStyle( kFullCircle );
+    slice_bnb->hist_->SetMarkerSize( 0.8 );
+    slice_bnb->hist_->SetStats( false );
+    double ymax = std::max( slice_bnb->hist_->GetMaximum(),
+      slice_mc_plus_ext->hist_->GetMaximum() ) * 1.2;
+    slice_bnb->hist_->GetYaxis()->SetRangeUser( 0., ymax );
 
     slice_bnb->hist_->SetTitle("");
     slice_bnb->hist_->SetXTitle("Reconstructed p_{#mu} (GeV/c)");
@@ -185,8 +215,37 @@ void annie_slice_plots(const char* univmake_file,
     lg->AddEntry(slice_mc_plus_ext->hist_.get(), "MC","l");
     lg->Draw("same");
 
-    TString nameo = Form("slice_hist_%02lu.pdf", sl_idx);
-    c1->SaveAs(nameo);
+    TString name = Form("slice_hist_%02lu.pdf", sl_idx);
+    c1->SaveAs(name);
+  }
+}
+
+
+void plot_slice_frac_err(const SystematicsCalculator& syst,
+                         const SliceBinning& sb) {
+  auto* matrix_map_ptr = syst.get_covariances().release();
+  auto& matrix_map = *matrix_map_ptr;
+
+  TH1D* reco_bnb_hist = syst.data_hists_.at( NFT::kOnBNB ).get();
+  TH1D* reco_ext_hist = syst.data_hists_.at( NFT::kExtBNB ).get();
+
+  #ifdef USE_FAKE_DATA
+    // Add the EXT to the "data" when working with fake data
+    reco_bnb_hist->Add( reco_ext_hist );
+  #endif
+
+  TH1D* reco_mc_plus_ext_hist = dynamic_cast<TH1D*>(
+    syst.cv_universe().hist_reco_.get()->Clone("reco_mc_plus_ext_hist"));
+
+  reco_mc_plus_ext_hist->SetDirectory( nullptr );
+
+  for ( size_t sl_idx = 0u; sl_idx < sb.slices_.size(); ++sl_idx ) {
+
+    const auto& slice = sb.slices_.at( sl_idx );
+    // We now have all of the reco bin space histograms that we need as input.
+    // Use them to make new histograms in slice space.
+    SliceHistogram* slice_bnb = SliceHistogram::make_slice_histogram(
+      *reco_bnb_hist, slice, &matrix_map.at("BNBstats") );
 
     // Get the binning and axis labels for the current slice by cloning the
     // (empty) histogram owned by the Slice object
@@ -274,6 +333,7 @@ void annie_slice_plots(const char* univmake_file,
       slice_for_syst->hist_->SetLineWidth( 3 );
     }
 
+    // Draw plots
     TCanvas* c2 = new TCanvas;
     TLegend* lg2 = new TLegend( 0.25, 0.7, 0.75, 0.85 );
 
@@ -293,9 +353,7 @@ void annie_slice_plots(const char* univmake_file,
     for ( auto& pair : frac_uncertainty_hists ) {
       const auto& name = pair.first;
       TH1* hist = pair.second;
-      // We already plotted the "total" one above
-      if ( name == "total" ) continue;
-
+      if ( name == "total" ) continue;  // Plotted above
       lg2->AddEntry( hist, name.c_str(), "l" );
       hist->Draw( "same hist" );
     }
@@ -306,8 +364,11 @@ void annie_slice_plots(const char* univmake_file,
     TString name = Form("slice_syst_%02lu.pdf", sl_idx);
     c2->SaveAs(name);
   }
+}
 
-  // Analysis, unfolding, etc.
+
+void extract_xs(const SystematicsCalculator& syst,
+                const SliceBinning& sb) {
   // Smearing
   auto smearcept_ptr = syst.get_cv_smearceptance_matrix();
 
