@@ -87,6 +87,11 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
     "mrd_ml_reco_structurally_eligible",
     "mrd_ml_input_tank_hits",
     "mrd_ml_tank_vertex_cm",
+    "mrd_ml_cos_theta",
+    "mrd_ml_muon_ke_mev",
+    "mrd_ml_topology_class",
+    "mrd_ml_cos_theta",
+    "mrd_ml_muon_ke_mev",
     "numMRDTracks",
     "MRDEnergyLoss",
     "MRDEnergyLossError",
@@ -235,6 +240,11 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   std::vector<bool>* MRDStop = new std::vector<bool>();
   //std::vector<int>* mcFolPPDG = new std::vector<int>();
 
+  bool mrd_ml_reconstruction_available, mrd_ml_reco_structurally_eligible;
+  int mrd_ml_topology_class, mrd_ml_input_tank_hits;
+  double mrd_ml_cos_theta, mrd_ml_muon_ke_mev;
+  std::vector<double>* mrd_ml_tank_vertex_cm = new std::vector<double>();
+
   t->SetBranchAddress("trigword", &trigword);
   t->SetBranchAddress("HasTank", &HasTank);
   t->SetBranchAddress("HasMRD", &HasMRD);
@@ -275,6 +285,14 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   t->SetBranchAddress("trueAngle",&mcangle);
   //t->SetBranchAddress("Qij",&Qij);
   //t->SetBranchAddress("trueFollowerParentPDG",&mcFolPPDG);
+
+  t->SetBranchAddress("mrd_ml_reconstruction_available", &mrd_ml_reconstruction_available);
+  t->SetBranchAddress("mrd_ml_reco_structurally_eligible", &mrd_ml_reco_structurally_eligible);
+  t->SetBranchAddress("mrd_ml_topology_class", &mrd_ml_topology_class);
+  t->SetBranchAddress("mrd_ml_input_tank_hits", &mrd_ml_input_tank_hits);
+  t->SetBranchAddress("mrd_ml_tank_vertex_cm", &mrd_ml_tank_vertex_cm);
+  t->SetBranchAddress("mrd_ml_cos_theta", &mrd_ml_cos_theta);
+  t->SetBranchAddress("mrd_ml_muon_ke_mev", &mrd_ml_muon_ke_mev);
 
   // Weights
   std::vector<double>* All0_weight = new std::vector<double>();
@@ -322,31 +340,45 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
 
   int category;
   bool mc_ccinc_signal;
-  bool sel_ccinc;
   bool mcfv;
-  bool recofv, recoMRDInc, recoMRD0pi, reco0pi;
-  double recop, recopc, recoPE;
   double mcp, mcct;
-  bool mc_no_mesons, no_followers;
+  bool mc_no_mesons; //, no_followers;
+  TBranch* b_category = to->Branch("category", &category);
+  TBranch* b_ccinc_signal = to->Branch("mc_ccinc_signal", &mc_ccinc_signal);
+  TBranch* TFV = to->Branch("trueFV", &mcfv);
+  TBranch* TMuP = to->Branch("trueMuonMomentum", &mcp);
+  TBranch* TCT = to->Branch("trueCosTheta", &mcct);
+  TBranch* TnoPi = to->Branch("true_no_mesons", &mc_no_mesons);
+  //TBranch* TnoF = to->Branch("true_no_followers", &no_followers);
+
+  bool recoMRDInc; //, recoMRD0pi, reco0pi;
+  double recoPE;
+  TBranch* RinMRDInc = to->Branch("recoInc_contained_in_MRD", &recoMRDInc);
+  //TBranch* RinMRD0pi = to->Branch("reco0pi_contained_in_MRD", &recoMRD0pi);
+  //TBranch* R0pi = to->Branch("reco_0pi", &reco0pi);
+  TBranch* RPE = to->Branch("recoPE", &recoPE);
+
+  bool sel_ccinc_simple;
+  bool recofv;
+  double recop, recopc;
+  TBranch* b_sel_ccinc_simple = to->Branch("sel_ccinc_simple", &sel_ccinc_simple);
+  TBranch* RFV = to->Branch("recoFV", &recofv);
+  TBranch* RMuP = to->Branch("simpleRecoMomentum", &recop);
+  TBranch* RMuPC = to->Branch("simpleRecoMomentumCor", &recopc);
+
+  bool sel_ccinc_cmrd;
+  bool cmrd_valid;
+  bool recofv_cmrd;
+  double recop_cmrd, recopc_cmrd;
+  TBranch* b_sel_ccinc_cmrd = to->Branch("sel_ccinc_cmrd", &sel_ccinc_cmrd);
+  TBranch* b_cmrd_valid = to->Branch("cmrd_valid", &cmrd_valid);
+  TBranch* RFV_cmrd = to->Branch("recoFV_cmrd", &recofv_cmrd);
+  TBranch* RMuP_cmrd = to->Branch("simpleRecoMomentum_cmrd", &recop_cmrd);
+  TBranch* RMuPC_cmrd = to->Branch("simpleRecoMomentumCor_cmrd", &recopc_cmrd);
+
   double mrd_eff, dirt_muon;
   std::vector<double>* All_weight = new std::vector<double>();
   std::vector<double>* flux_All = new std::vector<double>();
-
-  TBranch* b_category = to->Branch("category", &category);
-  TBranch* b_ccinc_signal = to->Branch("mc_ccinc_signal", &mc_ccinc_signal);
-  TBranch* b_sel_ccinc = to->Branch("sel_ccinc", &sel_ccinc);
-  TBranch* TFV = to->Branch("trueFV", &mcfv);
-  TBranch* RFV = to->Branch("recoFV", &recofv);
-  TBranch* RPE = to->Branch("recoPE", &recoPE);
-  TBranch* TMuP = to->Branch("trueMuonMomentum", &mcp);
-  TBranch* TCT = to->Branch("trueCosTheta", &mcct);
-  TBranch* RMuP = to->Branch("simpleRecoMomentum", &recop);
-  TBranch* RMuPC = to->Branch("simpleRecoMomentumCor", &recopc);
-  TBranch* TnoPi = to->Branch("true_no_mesons", &mc_no_mesons);
-  TBranch* TnoF = to->Branch("true_no_followers", &no_followers);
-  TBranch* RinMRDInc = to->Branch("recoInc_contained_in_MRD", &recoMRDInc);
-  TBranch* RinMRD0pi = to->Branch("reco0pi_contained_in_MRD", &recoMRD0pi);
-  TBranch* R0pi = to->Branch("reco_0pi", &reco0pi);
   TBranch* MRDEff = to->Branch("MRDEff", &mrd_eff);
   TBranch* DirtMu = to->Branch("DirtMu", &dirt_muon);
   TBranch* WAll = to->Branch("weight_All_UBGenie", &All_weight);
@@ -374,8 +406,15 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   for (Long64_t i=0; i<t->GetEntries(); i++) {
     t->GetEntry(i);
 
-    // To save space, only keep reconstructed events
-    if (simpleflag != 1 || std::isnan(simpleenergy)) {
+    // To save space, only keep reconstructed events (simpleReco or cMRD)
+    cmrd_valid = (
+         mrd_ml_reconstruction_available
+      && mrd_ml_reco_structurally_eligible
+      && (mrd_ml_topology_class == 0)
+      && (mrd_ml_input_tank_hits > 0)
+    );
+
+    if ((simpleflag != 1 || std::isnan(simpleenergy)) && !cmrd_valid) {
       continue;
     }
 
@@ -393,23 +432,45 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
     double recototE = simpleenergy + muon_m;
     recop  = std::sqrt(recototE*recototE - muon_m*muon_m);
     recopc = std::sqrt(recototE*recototE - muon_m*muon_m)*0.82 + 160.;
-    recoMRD0pi = numMRDTracks == 1 ? MRDStop->at(0) : false;
+    //recoMRD0pi = numMRDTracks == 1 ? MRDStop->at(0) : false;
     recoMRDInc = numMRDTracks > 0 ? MRDStop->at(0) : false;
     //reco0pi = ((PE > 200.*Qij*Qij) && (PE < 2000.*std::cbrt(4.5-Qij)+1500.));
 
-    sel_ccinc = (
+    // cMRD
+    recofv = FidVol(mrd_ml_tank_vertex_cm->at(0),
+                    mrd_ml_tank_vertex_cm->at(1),
+                    mrd_ml_tank_vertex_cm->at(2));
+    double recototE_cmrd = mrd_ml_muon_ke_mev + muon_m;
+    recop_cmrd  = std::sqrt(recototE_cmrd*recototE_cmrd - muon_m*muon_m);
+    recopc_cmrd = recop_cmrd;
+
+    sel_ccinc_simple = (
          (trigword == 5)
       && (HasTank == 1)
       && (HasMRD == 1)
       && (TankMRDCoinc == 1)
       && (NoVeto == 1)
+      && (recoPE)
       && (simpleflag == 1)
       && (recoMRDInc)
       && (recofv)
-      && (recoPE)
       && (simpleRecoCosTheta > 0.8)
       && (recopc >= 600)
       && (recopc < 1200)
+    );
+
+    sel_ccinc_cmrd = (
+         (trigword == 5)
+      && (HasTank == 1)
+      && (HasMRD == 1)
+      && (TankMRDCoinc == 1)
+      && (NoVeto == 1)
+      && (recoPE)
+      && (cmrd_valid)
+      && (recofv_cmrd)
+      && (mrd_ml_cos_theta > 0.8)
+      && (recopc_cmrd >= 600)
+      && (recopc_cmrd < 1200)
     );
      
     // Event categories
