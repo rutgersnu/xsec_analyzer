@@ -475,6 +475,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
      
     // Event categories
     category = kUnknown;
+    mc_ccinc_signal = false;
     int abs_nu_pdg = std::abs(trueNuPDG);
     bool is_mc = (abs_nu_pdg == 12 || abs_nu_pdg == 14 || abs_nu_pdg == 16);
 
