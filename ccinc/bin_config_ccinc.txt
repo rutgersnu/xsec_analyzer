@@ -8,8 +8,8 @@ phaseIITriggerTree
 0 0 "mc_ccinc_signal && trueMuonMomentum >= 1080 && trueMuonMomentum < 1200"
 1 -1 "!mc_ccinc_signal || trueMuonMomentum < 600 || trueMuonMomentum >= 1200"
 5
-0 0 "sel_ccinc && simpleRecoMomentumCor >= 600 && simpleRecoMomentumCor < 740"
-0 0 "sel_ccinc && simpleRecoMomentumCor >= 740 && simpleRecoMomentumCor < 860"
-0 0 "sel_ccinc && simpleRecoMomentumCor >= 860 && simpleRecoMomentumCor < 960"
-0 0 "sel_ccinc && simpleRecoMomentumCor >= 960 && simpleRecoMomentumCor < 1080"
-0 0 "sel_ccinc && simpleRecoMomentumCor >= 1080 && simpleRecoMomentumCor < 1200"
+0 0 "sel_ccinc_simple && simpleRecoMomentumCor >= 600 && simpleRecoMomentumCor < 740"
+0 0 "sel_ccinc_simple && simpleRecoMomentumCor >= 740 && simpleRecoMomentumCor < 860"
+0 0 "sel_ccinc_simple && simpleRecoMomentumCor >= 860 && simpleRecoMomentumCor < 960"
+0 0 "sel_ccinc_simple && simpleRecoMomentumCor >= 960 && simpleRecoMomentumCor < 1080"
+0 0 "sel_ccinc_simple && simpleRecoMomentumCor >= 1080 && simpleRecoMomentumCor < 1200"
