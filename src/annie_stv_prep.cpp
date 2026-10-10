@@ -352,7 +352,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   //TBranch* TnoF = to->Branch("true_no_followers", &no_followers);
 
   bool recoMRDInc; //, recoMRD0pi, reco0pi;
-  double recoPE;
+  bool recoPE;
   TBranch* RinMRDInc = to->Branch("recoInc_contained_in_MRD", &recoMRDInc);
   //TBranch* RinMRD0pi = to->Branch("reco0pi_contained_in_MRD", &recoMRD0pi);
   //TBranch* R0pi = to->Branch("reco_0pi", &reco0pi);
