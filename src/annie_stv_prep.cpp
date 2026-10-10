@@ -373,8 +373,7 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
   TBranch* b_sel_ccinc_cmrd = to->Branch("sel_ccinc_cmrd", &sel_ccinc_cmrd);
   TBranch* b_cmrd_valid = to->Branch("cmrd_valid", &cmrd_valid);
   TBranch* RFV_cmrd = to->Branch("recoFV_cmrd", &recofv_cmrd);
-  TBranch* RMuP_cmrd = to->Branch("simpleRecoMomentum_cmrd", &recop_cmrd);
-  TBranch* RMuPC_cmrd = to->Branch("simpleRecoMomentumCor_cmrd", &recopc_cmrd);
+  TBranch* RMuP_cmrd = to->Branch("cmrdRecoMomentum", &recop_cmrd);
 
   double mrd_eff, dirt_muon;
   std::vector<double>* All_weight = new std::vector<double>();
@@ -437,12 +436,11 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
     //reco0pi = ((PE > 200.*Qij*Qij) && (PE < 2000.*std::cbrt(4.5-Qij)+1500.));
 
     // cMRD
-    recofv = FidVol(mrd_ml_tank_vertex_cm->at(0),
-                    mrd_ml_tank_vertex_cm->at(1),
-                    mrd_ml_tank_vertex_cm->at(2));
+    recofv_cmrd = FidVol(mrd_ml_tank_vertex_cm->at(0),
+                         mrd_ml_tank_vertex_cm->at(1),
+                         mrd_ml_tank_vertex_cm->at(2));
     double recototE_cmrd = mrd_ml_muon_ke_mev + muon_m;
     recop_cmrd  = std::sqrt(recototE_cmrd*recototE_cmrd - muon_m*muon_m);
-    recopc_cmrd = recop_cmrd;
 
     sel_ccinc_simple = (
          (trigword == 5)
@@ -469,8 +467,8 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
       && (cmrd_valid)
       && (recofv_cmrd)
       && (mrd_ml_cos_theta > 0.8)
-      && (recopc_cmrd >= 600)
-      && (recopc_cmrd < 1200)
+      && (recop_cmrd >= 600)
+      && (recop_cmrd < 1200)
     );
      
     // Event categories
