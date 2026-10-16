@@ -1,0 +1,12 @@
+annie_ncqe_1bin
+phaseIITriggerTree
+7
+0 0 "category == 12"
+1 -1 "category == 13"
+1 -1 "category == 14"
+1 -1 "category == 15"
+1 -1 "category == 16"
+1 -1 "category == 17"
+1 -1 "category == 18"
+1
+0 0 "sel_ncqe"

@@ -1,0 +1,1 @@
+[totals] cv_gt30 0 missing_cv 0 true_signal 19442 candidates 16050 triggers 5508638 kept 27240 clusters 3278461 unassigned 0 cv 1234 selected 9059 multi_selected 0 inwin 4211

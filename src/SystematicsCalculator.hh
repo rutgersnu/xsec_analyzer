@@ -858,7 +858,9 @@ void SystematicsCalculator::build_universes(TDirectoryFile &root_tdir)
 //          if ( temp_pot == 0 ) throw std::runtime_error( "Missing POT in MC file!" );
 //          file_pot = temp_pot->GetVal();
 //          file_pot = temp_pot;
-          file_pot = 3.5e19;
+          // Simulated POT from the optional column of the file properties
+          // table; files without it keep the previous hardcoded value
+          file_pot = fpm.mc_pot(file_name, 3.5e19);
           //file_pot = 2.744e+20;//1.5297e+20; //ACTUALLY FIX THIS SO IT'S NOT 3.2545e16
         }
         else

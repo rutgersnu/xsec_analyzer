@@ -1,0 +1,26 @@
+quantity                                                          C++           python       diff  (relative unless marked abs)
+cv.f                                                         1.460308         1.460308   6.60e-11 ok
+cv.sigma                                                    2.9954647        2.9954647   1.04e-11 ok
+cv.T                                                        11324.419        11324.419   1.70e-10 ok
+cv.M_bkg                                                    248.90813        248.90813   4.28e-11 ok
+cv.signal_like                                              292.98336        292.98336   7.21e-11 ok
+cv.numerator                                                427.84595        427.84595   1.15e-10 ok
+cv.sigma_genie                                              2.0512555        2.0512555   7.96e-11 ok
+yield #nu NCQE (FV)                                         152.60764        152.60764   1.60e-10 ok
+yield #nu NCQE (OOFV)                                       140.37573        140.37573   3.24e-10 ok
+yield NC other                                              47.762696        47.762696   5.11e-11 ok
+yield CC                                                    6.9950742        6.9950742   6.11e-11 ok
+yield #bar{#nu} NCQE                                        2.9123595        2.9123595   5.78e-11 ok
+yield OOFV other                                            113.00684        113.00684   2.01e-10 ok
+yield External                                              78.231166        78.231166   5.81e-11 ok
+weight_All_UBGenie RMS                                      6.9852421        6.9852421   3.91e-11 ok
+weight_All_UBGenie mean (abs diff, %)                      0.48108858       0.48108858   1.92e-11 ok
+weight_All_UBGenie max|shift diff| (%)                  4.9576876e-09                0        nan 
+weight_flux_all RMS                                          9.480322         9.480322   3.41e-11 ok
+weight_flux_all mean (abs diff, %)                         -4.5747495       -4.5747495   3.97e-10 ok
+weight_flux_all max|shift diff| (%)                     4.9871272e-09                0        nan 
+MC stat total                                               5.1769882        5.1769882   6.40e-11 ok
+stat                                                        6.4941337        6.4941337   1.73e-11 ok
+cit_stat                                                    2.3212938        2.3212938   1.57e-10 ok
+skyshine                                                    3.0077882        3.0077882   7.51e-11 ok
+NUMBERS MATCH

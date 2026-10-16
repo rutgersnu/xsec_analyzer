@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <fstream>
 #include <map>
@@ -159,6 +160,17 @@ class FilePropertiesManager {
     inline const std::map< std::string, TriggersAndPOT >& data_norm_map() const
       { return data_norm_map_; }
 
+    // Simulated POT of an MC ntuple, read from an optional fourth column on MC
+    // lines of the file properties table ("path run type POT"). Files without
+    // that column return the fallback value.
+    inline double mc_pot( const std::string& file_name,
+      double fallback ) const
+    {
+      auto iter = mc_pot_map_.find( file_name );
+      if ( iter != mc_pot_map_.end() ) return iter->second;
+      return fallback;
+    }
+
     inline const std::map< int, std::map<NtupleFileType,
       std::set<std::string> > >& ntuple_file_map() const
       { return ntuple_file_map_; }
@@ -215,6 +227,7 @@ class FilePropertiesManager {
       // analysis ntuple file properties
       ntuple_file_map_.clear();
       data_norm_map_.clear();
+      mc_pot_map_.clear();
 
       const char* path = std::getenv( "STV_ANALYSIS_DIR" );
       if ( path == nullptr ) throw std::runtime_error( "The environment"
@@ -287,6 +300,11 @@ class FilePropertiesManager {
           // Store this information in the normalization map
           data_norm_map_[ file_name ] = TriggersAndPOT( trigs, pot );
         }
+        else {
+          // For MC files, an optional simulated POT may follow the type
+          double pot;
+          if ( temp_ss >> pot ) mc_pot_map_[ file_name ] = pot;
+        }
       }
     }
 
@@ -306,6 +324,10 @@ class FilePropertiesManager {
     // Keys are file names for processed data ntuples, values are objects
     // storing the corresponding number of triggers and POT exposure
     std::map< std::string, TriggersAndPOT > data_norm_map_;
+
+    // Keys are MC ntuple file names, values are the simulated POT given in
+    // the optional fourth column of the file properties table
+    std::map< std::string, double > mc_pot_map_;
 
     std::map< std::string, NtupleFileType > string_to_file_type_map_ = {
       { "onBNB", NtupleFileType::kOnBNB },

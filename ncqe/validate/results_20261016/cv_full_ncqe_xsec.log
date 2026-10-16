@@ -1,0 +1,32 @@
+==================== nuNCQE extraction (CV universe) ====================
+Data POT 2.5730e+20   N_obs 772.0000   D_CIT 81.2933   D_sky 13.9526   OOFV nuNCQE scaled with f
+  #nu NCQE (FV)           152.6076
+  #nu NCQE (OOFV)         140.3757
+  NC other                 47.7627
+  CC                        6.9951
+  #bar{#nu} NCQE            2.9124
+  OOFV other              113.0068
+  External                 78.2312
+  M_bkg 248.9081   signal-like 292.9834   N_obs - D - M_bkg 427.8459
+  T (true FV nuNCQE) 11324.4187   <sigma_GENIE> 2.0513
+  f = 1.4603   <sigma> = 2.9955 x 1e-38 cm^2 / oxygen
+  closure: selected (reco bin) 541.8915, sum over true bins 541.8915, difference -0.0000
+==================== Fractional uncertainties on <sigma> (/workspace/hep/ANNIE/xsec_analyzer_ncqe/ncqe/systcalc_cv.conf) ====================
+  BNBstats                    6.4941 %
+  CITstats                    2.3213 %
+  MCstats                     5.1770 %
+  flux                        9.4803 %
+  total                      14.5957 %
+  xsec_multi                  6.9852 %
+==================== Universe distributions (sigma_u / sigma_CV - 1, %) ====================
+  weight set                                       N       RMS      mean       std       p16       p84
+  weight_All_UBGenie                             100    6.9852    0.4811    6.9687   -6.3191    7.5254
+  weight_flux_all                                100    9.4803   -4.5747    8.3035  -12.4235    3.4368   [flux: T held at CV]
+==================== MC statistics (delta method, %) ====================
+  FV_signal                   3.1347
+  OOFV_nuNCQE                 3.0863
+  backgrounds                 2.6348
+  truth_denominator           0.7123
+  total                       5.1770
+  data statistics 6.4941 %   CIT statistics 2.3213 %   skyshine 3.0078 %
+wrote /home/vscode/builds/ncqe_xsa/cv_full/ncqe_xsec_cv_full.json

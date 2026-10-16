@@ -1,0 +1,9 @@
+files 3922 (unreadable 0)
+selected clusters (all bunches): python 9059  C++ 9059
+  in window: python 4211  C++ 4211
+  CV (window & first 26): python 1234  C++ 1234
+  CV per category (py cat -1..5): python {-1: 0, 0: 262, 1: 82, 2: 11, 3: 5, 4: 427, 5: 447}  C++ {-1: 0, 0: 262, 1: 82, 2: 11, 3: 5, 4: 427, 5: 447}
+  CV OOFV nuNCQE: python 241  C++ 241
+true FV nuNCQE triggers: python 19442  C++ 19442
+only in python: 0  only in C++: 0  flag differences: 0
+SELECTION MATCH

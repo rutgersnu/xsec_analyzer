@@ -1,5 +1,9 @@
 #pragma once
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "TH1.h"
 
 // Enum used to label event categories of interest for analysis plots
@@ -38,7 +42,30 @@ enum EventCategory {
 
   // All events that do not fall within any of the other categories (e.g.,
   // numubar CC)
-  kOther = 11
+  kOther = 11,
+
+  // nuNCQE analysis (assigned by annie_ncqe_prep; see src/NCQESelection.hh)
+  // Signal: NC QE on 16O (nu_mu or nu_e) with a true vertex in the FV
+  kNCQE_FV = 12,
+
+  // NC QE on 16O (nu_mu or nu_e) with a true vertex in the tank but outside the
+  // FV. Signal-like: scaled with the measured factor f in the extraction
+  kNCQE_OOFVNu = 13,
+
+  // Other NC interactions in the FV (non-QE, or QE on a target other than 16O)
+  kNCQE_NCOther = 14,
+
+  // CC interactions in the FV
+  kNCQE_CC = 15,
+
+  // NC QE on 16O by an antineutrino, in the FV
+  kNCQE_NuBar = 16,
+
+  // Any other interaction with a true vertex in the tank but outside the FV
+  kNCQE_OOFVOther = 17,
+
+  // True vertex outside the tank (External / dirt)
+  kNCQE_External = 18
 
 };
 
@@ -136,7 +163,14 @@ class EventCategoryInterpreter {
       { kNuECC, "#nu_{e} CC" },
       { kNC, "NC" },
       { kOOFV, "Out FV" },
-      { kOther, "Other" }
+      { kOther, "Other" },
+      { kNCQE_FV, "#nu NCQE (FV)" },
+      { kNCQE_OOFVNu, "#nu NCQE (OOFV)" },
+      { kNCQE_NCOther, "NC other" },
+      { kNCQE_CC, "CC" },
+      { kNCQE_NuBar, "#bar{#nu} NCQE" },
+      { kNCQE_OOFVOther, "OOFV other" },
+      { kNCQE_External, "External" }
     };
 
     std::map< EventCategory, int > event_category_to_color_map_ = {
@@ -151,6 +185,13 @@ class EventCategoryInterpreter {
       { kNuECC, kViolet },
       { kNC, kOrange },
       { kOOFV, kRed + 3 },
-      { kOther, kRed + 1 }
+      { kOther, kRed + 1 },
+      { kNCQE_FV, kGreen + 2 },
+      { kNCQE_OOFVNu, kGreen - 6 },
+      { kNCQE_NCOther, kOrange },
+      { kNCQE_CC, kAzure - 2 },
+      { kNCQE_NuBar, kViolet },
+      { kNCQE_OOFVOther, kRed + 3 },
+      { kNCQE_External, kGray + 2 }
     };
 };
