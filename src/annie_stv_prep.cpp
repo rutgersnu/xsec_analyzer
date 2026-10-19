@@ -413,10 +413,6 @@ void stvPrep(TString& infile, TString& outfile, TString* weightfile=nullptr){
       && (mrd_ml_input_tank_hits > 0)
     );
 
-    if ((simpleflag != 1 || std::isnan(simpleenergy)) && !cmrd_valid) {
-      continue;
-    }
-
     mcfv = FidVol(nuvtxx, nuvtxy, nuvtxz);
     mcp = std::sqrt(mcmuonE*mcmuonE - muon_m*muon_m);
     mcct = std::cos(mcangle*M_PI/180.);
