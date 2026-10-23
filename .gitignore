@@ -12,3 +12,8 @@ stvPrep*
 slim.C
 slimmer.C
 slimmest.C
+
+# build outputs
+bin/
+lib/
+__pycache__/

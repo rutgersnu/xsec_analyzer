@@ -1,0 +1,50 @@
+quantity                                                          C++           python       diff  (relative unless marked abs)
+cv.f                                                        1.3034466        1.3034466   1.31e-10 ok
+cv.sigma                                                    2.6748356        2.6748356   8.46e-11 ok
+cv.T                                                         11329.22         11329.22   3.32e-10 ok
+cv.M_bkg                                                     278.6402         278.6402   1.22e-10 ok
+cv.signal_like                                              305.43168        305.43168   1.63e-10 ok
+cv.numerator                                                398.11388        398.11388   6.89e-11 ok
+cv.sigma_genie                                              2.0521252        2.0521252   2.09e-10 ok
+yield #nu NCQE (FV)                                          163.0146         163.0146   1.49e-10 ok
+yield #nu NCQE (OOFV)                                       142.41708        142.41708   1.82e-10 ok
+yield NC other                                              48.845529        48.845529   3.79e-11 ok
+yield CC                                                    8.4480009        8.4480009   5.28e-11 ok
+yield #bar{#nu} NCQE                                         1.765501         1.765501   1.60e-10 ok
+yield OOFV other                                            133.85815        133.85815   1.08e-10 ok
+yield External                                              85.723019        85.723019   3.99e-11 ok
+weight_All_UBGenie RMS                                      10.307452        10.307452   2.95e-10 ok
+weight_All_UBGenie mean (abs diff, %)                      0.39233671       0.39233671   3.57e-11 ok
+weight_All_UBGenie max|shift diff| (%)                  4.8231712e-09                0        nan 
+weight_flux_all RMS                                         10.605189        10.605189   4.17e-10 ok
+weight_flux_all mean (abs diff, %)                         -6.5267243       -6.5267243   5.66e-11 ok
+weight_flux_all max|shift diff| (%)                     4.9183377e-09                0        nan 
+weight_XSecShape_CCMEC_UBGenie RMS                          8.5736826        8.5736826   4.69e-11 ok
+weight_XSecShape_CCMEC_UBGenie mean (abs diff, %)        1.687539e-14   -6.2172489e-15   2.31e-14 ok
+weight_XSecShape_CCMEC_UBGenie max|shift diff| (%)      4.0253134e-10                0        nan 
+weight_DecayAngMEC_UBGenie RMS                             0.25666845       0.25666845   4.83e-11 ok
+weight_DecayAngMEC_UBGenie mean (abs diff, %)             0.073932541      0.073932541   3.81e-12 ok
+weight_DecayAngMEC_UBGenie max|shift diff| (%)            3.07116e-11                0        nan 
+weight_Theta_Delta2Npi_UBGenie RMS                         0.36249187       0.36249187   9.87e-11 ok
+weight_Theta_Delta2Npi_UBGenie mean (abs diff, %)        -0.028610044     -0.028610044   9.90e-13 ok
+weight_Theta_Delta2Npi_UBGenie max|shift diff| (%)      3.9983072e-11                0        nan 
+weight_NormCCCOH_UBGenie RMS                               0.87635828       0.87635828   5.04e-11 ok
+weight_NormCCCOH_UBGenie mean (abs diff, %)               0.025968293      0.025968293   1.47e-12 ok
+weight_NormCCCOH_UBGenie max|shift diff| (%)            4.5394688e-11                0        nan 
+weight_ThetaDelta2NRad_UBGenie RMS                         0.23956698       0.23956698   1.94e-10 ok
+weight_ThetaDelta2NRad_UBGenie mean (abs diff, %)         -0.23802605      -0.23802605   4.71e-11 ok
+weight_ThetaDelta2NRad_UBGenie max|shift diff| (%)      1.8316737e-11                0        nan 
+weight_RPA_CCQE_UBGenie RMS                                0.87605972       0.87605972   1.75e-11 ok
+weight_RPA_CCQE_UBGenie mean (abs diff, %)              -1.631788e-08   -1.6317891e-08   1.11e-14 ok
+weight_RPA_CCQE_UBGenie max|shift diff| (%)             3.3205327e-11                0        nan 
+weight_AxFFCCQEshape_UBGenie RMS                           0.19897748       0.19897748   2.94e-11 ok
+weight_AxFFCCQEshape_UBGenie mean (abs diff, %)           -0.14069832      -0.14069832   3.24e-11 ok
+weight_AxFFCCQEshape_UBGenie max|shift diff| (%)        3.5193515e-11                0        nan 
+weight_VecFFCCQEshape_UBGenie RMS                          0.16742382       0.16742382   1.32e-10 ok
+weight_VecFFCCQEshape_UBGenie mean (abs diff, %)          -0.11838652      -0.11838652   7.99e-12 ok
+weight_VecFFCCQEshape_UBGenie max|shift diff| (%)       1.5980828e-11                0        nan 
+MC stat total                                               5.5794472        5.5794472   8.38e-11 ok
+stat                                                        6.9791308        6.9791308   6.56e-11 ok
+cit_stat                                                    2.4946534        2.4946534   1.43e-10 ok
+skyshine                                                    3.2324168        3.2324168   9.41e-11 ok
+NUMBERS MATCH

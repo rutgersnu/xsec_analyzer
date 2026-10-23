@@ -36,9 +36,22 @@ bin/annie_stv_prep: src/annie_stv_prep.cpp
 bin/slice_plots_ccinc: ccinc/slice_plots_ccinc.cpp
 	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -O3 -o $@ $^
 
-bin/univmake: src/univmake.C
-	$(CXX) $(CXXFLAGS) $(ROOTFLAGS) -O3 -o $@ $^
-	
+# Libraries after the sources: linkers using --as-needed (Ubuntu default) drop libraries listed first
+bin/univmake: src/univmake.C src/UniverseMaker.hh src/EventCategory.hh src/SystematicsCalculator.hh src/MCC9SystematicsCalculator.hh src/FilePropertiesManager.hh
+	$(CXX) $(CXXFLAGS) -O3 -o $@ $< $(ROOTFLAGS)
+
+# nuNCQE single-bin analysis (see ncqe/README_NCQE.md). -ffp-contract=off keeps the selection
+# arithmetic identical to the Python reference (no fused multiply-adds).
+NCQE_FLAGS = -O2 -ffp-contract=off
+
+ncqe: dirs bin/univmake bin/annie_ncqe_prep bin/ncqe_xsec
+
+bin/annie_ncqe_prep: src/annie_ncqe_prep.cpp src/NCQESelection.hh src/EventCategory.hh
+	$(CXX) $(CXXFLAGS) $(NCQE_FLAGS) -o $@ $< $(ROOTFLAGS)
+
+bin/ncqe_xsec: src/ncqe_xsec.cpp src/NCQESystematicsCalculator.hh src/SystematicsCalculator.hh src/FilePropertiesManager.hh src/UniverseMaker.hh src/EventCategory.hh
+	$(CXX) $(CXXFLAGS) $(NCQE_FLAGS) -o $@ $< $(ROOTFLAGS)
+
 .PHONY: clean
 
 .INTERMEDIATE: stv_root_dict.o
